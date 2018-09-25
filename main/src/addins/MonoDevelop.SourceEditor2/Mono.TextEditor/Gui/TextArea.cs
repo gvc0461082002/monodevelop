@@ -61,6 +61,7 @@ namespace Mono.TextEditor
 		TextEditorKeyPressTimings keyPressTimings;
 		
 		protected IconMargin       iconMargin;
+		protected QuickFixMargin   quickFixMargin;
 		protected ActionMargin     actionMargin;
 		protected GutterMargin     gutterMargin;
 		protected FoldMarkerMargin foldMarkerMargin;
@@ -364,6 +365,15 @@ namespace Mono.TextEditor
 				Accessible.AddAccessibleElement (iconMargin.Accessible);
 			}
 
+			quickFixMargin = new QuickFixMargin (editor);
+			if (quickFixMargin.Accessible != null) {
+				quickFixMargin.Accessible.Label = GettextCatalog.GetString ("Quick Fix Margin");
+				quickFixMargin.Accessible.Help = GettextCatalog.GetString ("Quick fix margin contains the context menu popup for code actions and fixes");
+				quickFixMargin.Accessible.Identifier = "TextArea.QuickFixMargin";
+				quickFixMargin.Accessible.GtkParent = this;
+				Accessible.AddAccessibleElement (quickFixMargin.Accessible);
+			}
+
 			gutterMargin = new GutterMargin (editor);
 			if (gutterMargin.Accessible != null) {
 				gutterMargin.Accessible.Label = GettextCatalog.GetString ("Line Numbers");
@@ -400,6 +410,7 @@ namespace Mono.TextEditor
 
 			margins.Add (iconMargin);
 			margins.Add (gutterMargin);
+			margins.Add (quickFixMargin);
 			margins.Add (actionMargin);
 			margins.Add (foldMarkerMargin);
 
@@ -1044,6 +1055,7 @@ namespace Mono.TextEditor
 			iconMargin = null;
 			actionMargin = null;
 			foldMarkerMargin = null;
+			quickFixMargin = null;
 			gutterMargin = null;
 			textViewMargin = null;
 			margins = null;
@@ -1380,11 +1392,11 @@ namespace Mono.TextEditor
 		{
 			if (overChildWidget)
 				return true;
+			var result = base.OnButtonPressEvent (e);
 
 			pressPositionX = e.X;
 			pressPositionY = e.Y;
 			base.IsFocus = true;
-
 			// If there is anything in the preedit buffer, commit it otherwise text
 			// selection may have the wrong offsets.
 			CommitPreedit ();
@@ -1412,7 +1424,7 @@ namespace Mono.TextEditor
 				if (margin != null) 
 					margin.MousePressed (new MarginMouseEventArgs (textEditorData.Parent, e, e.Button, e.X - startPos, e.Y, e.State));
 			}
-			return base.OnButtonPressEvent (e);
+			return result;
 		}
 		
 		bool DoClickedPopupMenu (Gdk.EventButton e)
@@ -1831,9 +1843,13 @@ namespace Mono.TextEditor
 				return gutterMargin;
 			}
 		}
-		
+
 		public Margin IconMargin {
 			get { return iconMargin; }
+		}
+
+		public QuickFixMargin QuickFixMargin {
+			get { return quickFixMargin; }
 		}
 
 		public ActionMargin ActionMargin {
