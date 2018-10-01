@@ -1,13 +1,10 @@
+﻿//
+// Toolbox.cs
 //
-// ToolboxPad.cs: The pad that hold the MD toolbox.
+// Author:
+//   Mike Krüger <mkrueger@novell.com>
 //
-// Authors:
-//   Michael Hutchinson <m.j.hutchinson@gmail.com>
-//
-// Copyright (C) 2006 Michael Hutchinson
-//
-//
-// This source code is licenced under The MIT License:
+// Copyright (C) 2007-2008 Novell, Inc (http://www.novell.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -30,39 +27,27 @@
 //
 
 using System;
-using MonoDevelop.Ide.Gui;
-using MonoDevelop.Components;
-using Xwt;
+using System.Collections.Generic;
 
-namespace MonoDevelop.DesignerSupport
+namespace MonoDevelop.DesignerSupport.Toolbox
 {
-	public class ToolboxPad : PadContent
+	public interface IToolboxWidget
 	{
-		Toolbox.Toolbox toolbox;
-		Gtk.Widget widget;
+		Action<Gdk.EventButton> DoPopupMenu { get; set; }
 
-		public ToolboxPad ()
-		{
-		}
-		
-		protected override void Initialize (IPadWindow container)
-		{
-			base.Initialize (container);
+		bool IsListMode { get; set; }
+		bool CanIconizeToolboxCategories { get; }
+		bool ShowCategories { get; set; }
+		string CustomMessage { get; set; }
 
-			Xwt.Toolkit.Load (Xwt.ToolkitType.XamMac).Invoke (() => {
-				toolbox = new Toolbox.Toolbox (DesignerSupport.Service.ToolboxService, container);
-			});
-		
-			var wd = Xwt.Toolkit.CurrentEngine.WrapWidget (toolbox, NativeWidgetSizing.DefaultPreferredSize);
-			widget = (Gtk.Widget)Xwt.Toolkit.CurrentEngine.GetNativeWidget (wd);
-		}
-		
-		#region AbstractPadContent implementations
-		
-		public override Control Control {
-			get { return widget; }
-		}
-		
-		#endregion
+		IEnumerable<ToolboxWidgetCategory> Categories { get; }
+		IEnumerable<ToolboxWidgetItem> AllItems { get; }
+
+		void ClearCategories ();
+		void AddCategory (ToolboxWidgetCategory category);
+		void HideTooltipWindow ();
+
+		void QueueResize ();
+		void QueueDraw ();
 	}
 }

@@ -46,6 +46,9 @@
       <HintPath>..\..\..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Xamarin.Mac">
+      <HintPath>..\..\..\external\Xamarin.Mac.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\core\MonoDevelop.Core\MonoDevelop.Core.csproj">
@@ -126,6 +129,20 @@
     <Compile Include="MonoDevelop.DesignerSupport.Projects\ImplicitFrameworkAssemblyReferenceDescriptor.cs" />
     <Compile Include="MonoDevelop.DesignerSupport.Toolbox\ToolboxExtensions.cs" />
     <Compile Include="MonoDevelop.DesignerSupport.Toolbox\ICustomTooltipToolboxNode.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\Extensions.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\ProgressIndicator.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\CollectionView\CollectionView.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\CollectionView\CollectionViewDataSource.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\CollectionView\CollectionViewFlowLayout.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\CollectionView\CollectionViewItems.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\IToolboxWidget.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\NativeViews\SearchTextField.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\NativeViews\ToggleButton.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\NativeViews\ClickedButton.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\Helpers\NativeViewHelper.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\NativeViews\ScrollContainerView.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\CollectionView\Styles.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\NativeViews\PaddingView.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.DesignerSupport.addin.xml" />
@@ -161,6 +178,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MonoDevelop.DesignerSupport.Toolbox\Helpers\" />
+    <Folder Include="MonoDevelop.DesignerSupport.Toolbox\CollectionView\" />
+    <Folder Include="MonoDevelop.DesignerSupport.Toolbox\NativeViews\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
