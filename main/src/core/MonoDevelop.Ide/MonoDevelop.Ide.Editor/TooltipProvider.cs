@@ -156,9 +156,22 @@ namespace MonoDevelop.Ide.Editor
 
 			var origin = editor.GetContent<ITextEditorImpl> ().GetEditorWindowOrigin ();
 
+
+			var xwtWindow = (Xwt.WindowFrame)tipWindow;
+			xwtWindow.Location = CalculateWindowLocation (editor, item, xwtWindow, mouseX, mouseY, origin);
+
+			var gtkWindow = Xwt.Toolkit.Load (Xwt.ToolkitType.Gtk).GetNativeWindow (xwtWindow) as Gtk.Window;
+			if (gtkWindow != null)
+				gtkWindow.ShowAll ();
+			else
+				xwtWindow.Show ();
+		}
+
+		protected virtual Xwt.Point CalculateWindowLocation (TextEditor editor, TooltipItem item, Xwt.WindowFrame xwtWindow, int mouseX, int mouseY, Xwt.Point origin)
+		{
 			int w;
 			double xalign;
-			GetRequiredPosition (editor, tipWindow, out w, out xalign);
+			GetRequiredPosition (editor, xwtWindow, out w, out xalign);
 			w += 10;
 
 			var allocation = GetAllocation (editor);
@@ -166,28 +179,22 @@ namespace MonoDevelop.Ide.Editor
 			int y = (int)(mouseY + origin.Y + allocation.Y);
 			Gtk.Widget widget = editor;
 			var geometry = widget.Screen.GetUsableMonitorGeometry (widget.Screen.GetMonitorAtPoint (x, y));
-			
-			x -= (int) ((double) w * xalign);
+
+			x -= (int)((double)w * xalign);
 			y += 10;
-			
+
 			if (x + w >= geometry.X + geometry.Width)
 				x = geometry.X + geometry.Width - w;
 			if (x < geometry.Left)
 				x = geometry.Left;
 
-			var xwtWindow = (Xwt.WindowFrame)tipWindow;
-			int h = (int)xwtWindow.Size.Height;
+			int h = (int)xwtWindow.Size. Height;
 			if (y + h >= geometry.Y + geometry.Height)
 				y = geometry.Y + geometry.Height - h;
 			if (y < geometry.Top)
 				y = geometry.Top;
-			
-			xwtWindow.Location = new Xwt.Point(x, y);
-			var gtkWindow = Xwt.Toolkit.Load (Xwt.ToolkitType.Gtk).GetNativeWindow (xwtWindow) as Gtk.Window;
-			if (gtkWindow != null)
-				gtkWindow.ShowAll ();
-			else
-				xwtWindow.Show ();
+
+			return new Xwt.Point (x, y);
 		}
 
 		protected bool IsDisposed {

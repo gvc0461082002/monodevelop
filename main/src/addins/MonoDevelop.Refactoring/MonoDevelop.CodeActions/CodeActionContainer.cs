@@ -31,6 +31,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CodeRefactorings;
 using System.Collections.Immutable;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.CodeActions
 {
@@ -63,6 +64,8 @@ namespace MonoDevelop.CodeActions
 				codeRefactoringActions = value;
 			}
 		}
+
+		public TextSpan Span { get; internal set; }
 
 		internal CodeActionContainer (ImmutableArray<CodeFixCollection> codeDiagnosticActions, ImmutableArray<CodeRefactoring> codeRefactoringActions)
 		{
