@@ -215,9 +215,26 @@ namespace MonoDevelop.AnalysisCore.Gui
 				var point = sourceEditorView.TextEditor.TextArea.LocationToPoint (loc.Line, loc.Column);
 				point.Y += (int)(editor.GetLineHeight (loc.Line) + sourceEditorView.TextEditor.VAdjustment.Value);
 				point.X += (int)sourceEditorView.TextEditor.HAdjustment.Value;
-				var floatingWidget = new FloatingQuickFixIconWidget (codeActionEditorExtension, sourceEditorView, SmartTagSeverity.ErrorFixes, info.Tag, point);
+				var window = (LanguageItemWindow)tipWindow;
+
+				var floatingWidget = new FloatingQuickFixIconWidget (codeActionEditorExtension, window, sourceEditorView, SmartTagSeverity.ErrorFixes, info.Tag, point);
 				sourceEditorView.TextEditor.TextArea.AddTopLevelWidget (floatingWidget, (int)point.X, (int)point.Y);
-				((LanguageItemWindow)tipWindow).Tag = floatingWidget;
+				window.Tag = floatingWidget;
+				window.EnterNotifyEvent += delegate {
+					floatingWidget.CancelDestroy ();
+				};
+				window.LeaveNotifyEvent += delegate {
+					floatingWidget.QueueDestroy ();
+				};
+			}
+		}
+		public override void DestroyTooltipWindow (Window tipWindow)
+		{
+			var window = (LanguageItemWindow)tipWindow;
+			if (window.Tag is FloatingQuickFixIconWidget iconWidget) {
+				iconWidget.QueueDestroy ();
+			} else {
+				tipWindow.Dispose ();
 			}
 		}
 
@@ -226,14 +243,16 @@ namespace MonoDevelop.AnalysisCore.Gui
 		class FloatingQuickFixIconWidget : Gtk.EventBox
 		{
 			readonly CodeActionEditorExtension ext;
+			private readonly LanguageItemWindow window;
 			readonly SourceEditorView sourceEditorView;
 			readonly CodeActionContainer fixes;
 			readonly Cairo.Point point;
 			private uint destroyTimeout;
 
-			public FloatingQuickFixIconWidget (CodeActionEditorExtension codeActionEditorExtension, SourceEditorView sourceEditorView, SourceEditor.SmartTagSeverity severity, CodeActionContainer fixes, Cairo.Point point)
+			public FloatingQuickFixIconWidget (CodeActionEditorExtension codeActionEditorExtension, LanguageItemWindow window, SourceEditorView sourceEditorView, SourceEditor.SmartTagSeverity severity, CodeActionContainer fixes, Cairo.Point point)
 			{
 				this.ext = codeActionEditorExtension;
+				this.window = window;
 				this.sourceEditorView = sourceEditorView;
 				this.fixes = fixes;
 				this.point = point;
@@ -262,7 +281,7 @@ namespace MonoDevelop.AnalysisCore.Gui
 
 			void FloatingQuickFixIconWidget_LeaveNotifyEvent (object o, Gtk.LeaveNotifyEventArgs args)
 			{
-				Destroy ();
+				QueueDestroy ();
 			}
 
 			protected override bool OnButtonPressEvent (Gdk.EventButton evnt)
@@ -281,10 +300,11 @@ namespace MonoDevelop.AnalysisCore.Gui
 			{
 				ext.FixesMenuClosed -= Ext_FixesMenuClosed;
 				CancelDestroy ();
+				window.Destroy ();
 				base.OnDestroyed ();
 			}
 
-			void CancelDestroy ()
+			internal void CancelDestroy ()
 			{
 				if (destroyTimeout > 0) {
 					GLib.Source.Remove (destroyTimeout);
@@ -294,6 +314,7 @@ namespace MonoDevelop.AnalysisCore.Gui
 
 			internal void QueueDestroy ()
 			{
+
 				destroyTimeout = GLib.Timeout.Add (500, delegate {
 					destroyTimeout = 0;
 					Destroy ();

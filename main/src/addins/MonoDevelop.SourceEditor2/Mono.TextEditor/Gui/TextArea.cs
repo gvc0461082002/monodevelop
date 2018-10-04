@@ -3327,16 +3327,16 @@ namespace Mono.TextEditor
 			CancelScheduledShow ();
 			
 			if (tipWindow != null) {
-//				if (checkMouseOver && tipWindow.GdkWindow != null) {
-//					// Don't hide the tooltip window if the mouse pointer is inside it.
-//					int x, y, w, h;
-//					Gdk.ModifierType m;
-//					tipWindow.GdkWindow.GetPointer (out x, out y, out m);
-//					tipWindow.GdkWindow.GetSize (out w, out h);
-//					if (x >= 0 && y >= 0 && x < w && y < h)
-//						return;
-//				}
-				tipWindow.Dispose ();
+				//				if (checkMouseOver && tipWindow.GdkWindow != null) {
+				//					// Don't hide the tooltip window if the mouse pointer is inside it.
+				//					int x, y, w, h;
+				//					Gdk.ModifierType m;
+				//					tipWindow.GdkWindow.GetPointer (out x, out y, out m);
+				//					tipWindow.GdkWindow.GetSize (out w, out h);
+				//					if (x >= 0 && y >= 0 && x < w && y < h)
+				//						return;
+				//				}
+				currentTooltipProvider.DestroyTooltipWindow (tipWindow);
 				tipWindow = null;
 				tipItem = null;
 			}

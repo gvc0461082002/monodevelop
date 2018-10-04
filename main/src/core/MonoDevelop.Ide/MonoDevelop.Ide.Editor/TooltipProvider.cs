@@ -67,7 +67,7 @@ namespace MonoDevelop.Ide.Editor
 
 		public object Item { get; set; }
 
-		public TooltipItem (object item, ISegment itemSegment) 
+		public TooltipItem (object item, ISegment itemSegment)
 		{
 			if (itemSegment == null)
 				throw new ArgumentNullException ("itemSegment");
@@ -188,13 +188,23 @@ namespace MonoDevelop.Ide.Editor
 			if (x < geometry.Left)
 				x = geometry.Left;
 
-			int h = (int)xwtWindow.Size. Height;
+			int h = (int)xwtWindow.Size.Height;
 			if (y + h >= geometry.Y + geometry.Height)
 				y = geometry.Y + geometry.Height - h;
 			if (y < geometry.Top)
 				y = geometry.Top;
 
 			return new Xwt.Point (x, y);
+		}
+
+		public virtual void DestroyTooltipWindow (Window tipWindow)
+		{
+			if (tipWindow.nativeWidget is Gtk.Widget gtkWidget) {
+				gtkWidget.Destroy ();
+			} else if (tipWindow.nativeWidget is IDisposable disposable) {
+				disposable.Dispose ();
+			} 
+			tipWindow.Dispose ();
 		}
 
 		protected bool IsDisposed {
