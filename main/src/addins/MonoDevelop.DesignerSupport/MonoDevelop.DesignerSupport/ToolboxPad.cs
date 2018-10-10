@@ -64,8 +64,11 @@ namespace MonoDevelop.DesignerSupport
 				Gtk.Drag.SourceSet (widget, Gdk.ModifierType.Button1Mask, e, Gdk.DragAction.Copy | Gdk.DragAction.Move);
 			};
 
-			toolbox.DragBegin += (object sender, EventArgs e) => { 
-				DesignerSupport.Service.ToolboxService.DragSelectedItem (widget, null);
+			toolbox.DragBegin += (object sender, EventArgs e) => {
+				Gtk.Application.Invoke ((s,ev) => {
+					DesignerSupport.Service.ToolboxService.DragSelectedItem (widget, null);
+				});
+
 			};
 		}
 		

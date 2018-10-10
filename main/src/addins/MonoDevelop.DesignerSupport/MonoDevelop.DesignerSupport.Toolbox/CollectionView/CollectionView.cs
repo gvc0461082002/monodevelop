@@ -16,7 +16,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 		readonly List<ToolboxWidgetCategory> categories = new List<ToolboxWidgetCategory> ();
 
 		CollectionViewDataSource dataSource;
-		CollectionViewDelegateFlowLayout collectionViewDelegate;
+		CollectionViewFlowLayoutDelegate collectionViewDelegate;
 		CollectionViewFlowLayout flowLayout;
 
 		public IEnumerable<ToolboxWidgetCategory> Categories {
@@ -80,7 +80,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 		{
 			Initialize ();
 		}
-		ColleccionViewDelegate colleccionViewDelegate;
+
 		// Shared initialization code
 		public void Initialize ()
 		{
@@ -92,17 +92,16 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			//flowLayout.SectionInset = new NSEdgeInsets(top: 10.0f, left: 20.0f, bottom: 10.0f, right: 20.0f);
 			CollectionViewLayout = flowLayout;
 		
-			Delegate = collectionViewDelegate = new CollectionViewDelegateFlowLayout ();
+			Delegate = collectionViewDelegate = new CollectionViewFlowLayoutDelegate ();
 			Selectable = true;
 			AllowsEmptySelection = true;
 			DataSource = dataSource = new CollectionViewDataSource (categories);
 
-			Delegate = colleccionViewDelegate = new ColleccionViewDelegate ();
-			colleccionViewDelegate.DragBegin += (s, e) => {
+			collectionViewDelegate.DragBegin += (s, e) => {
 				DragBegin?.Invoke (this, EventArgs.Empty);
 			};
 
-			colleccionViewDelegate.SelectionChanged += (s, e) => {
+			collectionViewDelegate.SelectionChanged += (s, e) => {
 				if (e.Count == 0) {
 					return;
 				}
@@ -236,8 +235,8 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			}
 
 			var toolboxWidgetCategory = categories[(int)indexPath.Section];
-			item.ExpandButton.AccessibilityTitle = selectedItem.Tooltip ?? "";
-			item.ExpandButton.SetCustomTitle (selectedItem.Text ?? "");
+			item.ExpandButton.AccessibilityTitle = toolboxWidgetCategory.Tooltip ?? "";
+			item.ExpandButton.SetCustomTitle (toolboxWidgetCategory.Text ?? "");
 			item.IsCollapsed = flowLayout.SectionAtIndexIsCollapsed ((nuint)indexPath.Section);
 
 			//persisting the expanded value over our models (this is not necessary)

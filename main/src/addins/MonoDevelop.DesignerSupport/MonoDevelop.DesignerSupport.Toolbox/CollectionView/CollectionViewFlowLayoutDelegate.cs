@@ -11,10 +11,23 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 	}
 
-	class CollectionViewDelegateFlowLayout : NSCollectionViewDelegateFlowLayout
+	class CollectionViewFlowLayoutDelegate : NSCollectionViewDelegateFlowLayout
 	{
 		public bool IsOnlyImage { get; set; }
 		public bool IsShowCategories { get; set; }
+
+		public event EventHandler<NSSet> SelectionChanged;
+		public event EventHandler<NSIndexSet> DragBegin;
+		public override void ItemsSelected (NSCollectionView collectionView, NSSet indexPaths)
+		{
+			SelectionChanged?.Invoke (this, indexPaths);
+		}
+
+		public override bool CanDragItems (NSCollectionView collectionView, NSSet indexPaths, NSEvent theEvent)
+		{
+			DragBegin?.Invoke (this, null);
+			return false;
+		}
 
 		public override CGSize SizeForItem (NSCollectionView collectionView, NSCollectionViewLayout collectionViewLayout, NSIndexPath indexPath)
 		{
