@@ -167,6 +167,13 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 					DragBegin?.Invoke (this, e);
 				}
 			};
+
+			this.toolboxWidget.ActivateSelectedItem += delegate {
+				toolboxService.UseSelectedItem ();
+			};
+
+			this.toolboxWidget.DoPopupMenu = ShowPopup;
+
 			//set initial state
 			this.toolboxWidget.ShowCategories = catToggleButton.Active = true;
 			compactModeToggleButton.Active = MonoDevelop.Core.PropertyService.Get ("ToolboxIsInCompactMode", false);

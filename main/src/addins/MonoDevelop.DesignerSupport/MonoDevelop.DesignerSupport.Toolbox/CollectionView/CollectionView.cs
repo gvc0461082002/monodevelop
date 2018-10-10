@@ -44,6 +44,12 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			SelectedItemChanged?.Invoke (this, args);
 		}
 
+		public event EventHandler ActivateSelectedItem;
+		protected virtual void OnActivateSelectedItem (EventArgs args)
+		{
+			ActivateSelectedItem?.Invoke (this, args);
+		}
+
 		ToolboxWidgetItem selectedItem;
 		public ToolboxWidgetItem SelectedItem {
 			get {
@@ -109,7 +115,26 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 					SelectedItem = categories[(int)indexPath.Section].Items[(int)indexPath.Item];
 				}
 			};
+
 			BackgroundColors = new NSColor[] { Styles.SearchTextFieldLineBackgroundColor };
+		}
+
+		public override void MouseDown (NSEvent theEvent)
+		{
+			base.MouseDown (theEvent);
+			if (this.SelectedItem != null && theEvent.ClickCount > 1) {
+				OnActivateSelectedItem (EventArgs.Empty);
+			}
+		}
+
+		public override void KeyDown (NSEvent theEvent)
+		{
+			base.KeyDown (theEvent);
+
+			if ((theEvent.KeyCode == 36) || (theEvent.KeyCode == 76)) {
+				if (this.SelectedItem != null)
+					this.OnActivateSelectedItem (EventArgs.Empty);
+			}
 		}
 
 		//internal void ResizeViews ()

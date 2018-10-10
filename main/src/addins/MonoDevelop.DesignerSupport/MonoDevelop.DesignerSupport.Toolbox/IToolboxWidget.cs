@@ -45,6 +45,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 		ToolboxWidgetItem SelectedItem { get; }
 
 		event EventHandler SelectedItemChanged;
+		event EventHandler ActivateSelectedItem;
 
 		void ClearCategories ();
 		void AddCategory (ToolboxWidgetCategory category);
