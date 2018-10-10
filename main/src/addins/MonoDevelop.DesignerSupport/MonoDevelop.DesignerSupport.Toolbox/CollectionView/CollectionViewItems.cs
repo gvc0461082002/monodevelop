@@ -20,52 +20,28 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			get => base.Selected;
 			set {
 				base.Selected = value;
-				if (frameBox != null) {
-					if (value) {
-						frameBox.BackgroundColor = new Xwt.Drawing.Color (red: 0.33f, green: 0.55f, blue: 0.92f, alpha: 1.0f);
-					} else {
-						frameBox.BackgroundColor = new Xwt.Drawing.Color (red: 0.25f, green: 0.25f, blue: 0.25f, alpha: 1.0f);
-					}
+				if (contentCollectionView != null) {
+					contentCollectionView.IsSelected = value;
 				}
 			}
 		}
 
-		public static NSColor CellBackgroundSelectedColor = NSColor.FromRgba (red: 0.33f, green: 0.55f, blue: 0.92f, alpha: 1.0f);
-		public static NSColor CellBorderSelectedColor = NSColor.Black;
-		public static NSColor CellBackgroundColor = NSColor.FromRgba (red: 0.25f, green: 0.25f, blue: 0.25f, alpha: 1.0f);
-
-		public Xwt.Drawing.Image Image {
-			get => imageView.Image;
-			set => imageView.Image = value;
-		}
-
-		Xwt.FrameBox frameBox;
-		Xwt.HBox contentBox;
-		Xwt.Label label;
-		Xwt.ImageView imageView;
-
+		ContentCollectionViewItem contentCollectionView;
 		public override void LoadView ()
 		{
-			Toolkit.NativeEngine.Invoke (() => {
+			View = contentCollectionView = new ContentCollectionViewItem ();
+			View.Identifier = Name;
+			View.AccessibilityElement = false;
+			contentCollectionView.BackgroundSelectedColor = Styles.CellBackgroundSelectedColor;
+			contentCollectionView.BorderSelectedColor = Styles.CellBorderSelectedColor;
+			contentCollectionView.BackgroundColor = Styles.CellBackgroundColor;
 
-				frameBox = new Xwt.FrameBox ();
-				View = Toolkit.NativeEngine.GetNativeWidget (frameBox) as NSView;
+			ImageView = new NSImageView ();
+			contentCollectionView.AddArrangedSubview (ImageView);
 
-				contentBox = new Xwt.HBox ();
+			TextField = NativeViewHelper.CreateLabel ("", NSTextAlignment.Left, NativeViewHelper.GetSystemFont (false, (int)NSFont.SmallSystemFontSize));
 
-				imageView = new Xwt.ImageView ();
-				var imageViewNativeBorderContainer = Toolkit.NativeEngine.GetNativeWidget (imageView) as NSView;
-				ImageView = imageViewNativeBorderContainer.Subviews.FirstOrDefault () as NSImageView;
-
-				label = new Xwt.Label ("");
-				var labelNativeBorderContainer = Toolkit.NativeEngine.GetNativeWidget (label) as NSView;
-				TextField = labelNativeBorderContainer.Subviews.FirstOrDefault () as NSTextField;
-			});
-
-			frameBox.Content = contentBox;
-			contentBox.PackStart (imageView);
-			contentBox.PackStart (label);
-			frameBox.Show ();
+			contentCollectionView.AddArrangedSubview (TextField);
 		}
 
 		public LabelCollectionViewItem (IntPtr handle) : base (handle)
@@ -77,11 +53,8 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 	[Register ("HeaderCollectionViewItem")]
 	public class HeaderCollectionViewItem : NSCollectionViewItem
 	{
-		public static NSColor HeaderCellBackgroundSelectedColor = NSColor.FromRgb (0.29f, green: 0.29f, blue: 0.29f);// NSColor.ControlBackground;
-		public static NSColor HeaderCellBackgroundColor = HeaderCellBackgroundSelectedColor;
-
-		public static Xwt.Drawing.Image ExpandedImage = ImageService.GetIcon ("md-disclose-arrow-down", Gtk.IconSize.Menu);
-		public static Xwt.Drawing.Image CollapsedImage = ImageService.GetIcon ("md-disclose-arrow-up", Gtk.IconSize.Menu);
+		public static NSImage CollapsedImage = ImageService.GetIcon ("md-disclose-arrow-down", Gtk.IconSize.Menu).ToNative ();
+		public static NSImage ExpandedImage = ImageService.GetIcon ("md-disclose-arrow-up", Gtk.IconSize.Menu).ToNative ();
 
 		public const int ExpandButtonSize = 20;
 		public const int SectionHeight = 25;
@@ -97,29 +70,14 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			}
 		}
 
-		Xwt.HBox contentBox;
-		Xwt.Label label;
-		public Xwt.Button ExpandButton { get; private set; }
+		public NativeViews.ExpanderButton ExpandButton { get; private set; }
 
 		public override void LoadView ()
 		{
-			Toolkit.NativeEngine.Invoke (() => {
-
-				contentBox = new Xwt.HBox ();
-				View = Toolkit.NativeEngine.GetNativeWidget (contentBox) as NSView;
-			
-				label = new Xwt.Label ("");
-				var labelNativeBorderContainer = Toolkit.NativeEngine.GetNativeWidget (label) as NSView;
-				TextField = labelNativeBorderContainer.Subviews.FirstOrDefault () as NSTextField;
-
-				ExpandButton = new Xwt.Button ();
-			});
-
-			contentBox.PackStart (label, true);
-			contentBox.PackEnd (ExpandButton);
-			contentBox.Show ();
-
-			View.WantsLayer = true;
+			View = ExpandButton = new NativeViews.ExpanderButton {
+				Image = ExpandedImage,
+			};
+			ExpandButton.Identifier = Name;
 		}
 
 		public HeaderCollectionViewItem (IntPtr handle) : base (handle)
@@ -131,60 +89,51 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 	[Register ("ImageCollectionViewItem")]
 	public class ImageCollectionViewItem : NSCollectionViewItem
 	{
-		public static NSColor ImageCellBackgroundSelectedColor = NSColor.FromRgba (red: 0.33f, green: 0.55f, blue: 0.92f, alpha: 1.0f);
-		public static NSColor ImageCellBorderSelectedColor = NSColor.Black;
-		public static NSColor ImageCellBackgroundColor = NSColor.FromRgba (red: 0.25f, green: 0.25f, blue: 0.25f, alpha: 1.0f);
-
 		public static CGSize Size = new CGSize (25, 25);
 
 		internal const string Name = "ImageViewItem";
 		const int margin = 5;
 
-		public Xwt.Drawing.Image Image {
-			get => imageView.Image;
-			set => imageView.Image = value;
-		}
-
-		public string ToolTip {
-			get => ImageView.ToolTip;
-			set => ImageView.ToolTip = value;
-		}
-
-		public string AccessibilityTitle {
-			get => ImageView.AccessibilityLabel;
-			set => ImageView.AccessibilityTitle = value;
-		}
-
 		public override bool Selected {
 			get => base.Selected;
 			set {
 				base.Selected = value;
-				if (frameBox != null) {
-					if (value) {
-						frameBox.BackgroundColor = new Xwt.Drawing.Color (red: 0.33f, green: 0.55f, blue: 0.92f, alpha: 1.0f);
-					} else {
-						frameBox.BackgroundColor = new Xwt.Drawing.Color (red: 0.25f, green: 0.25f, blue: 0.25f, alpha: 1.0f);
-					}
+				if (contentCollectionView != null) {
+					contentCollectionView.IsSelected = value;
 				}
 			}
 		}
 
-		Xwt.FrameBox frameBox;
-		Xwt.ImageView imageView;
+		public  NSImage Image {
+			get => contentCollectionView.BackgroundImage;
+			set {
+				contentCollectionView.BackgroundImage = value;
+			}
+		}
 
+		public string AccessibilityTitle {
+			get => contentCollectionView.AccessibilityTitle;
+			set {
+				contentCollectionView.AccessibilityTitle = value;
+			}
+		}
+
+		public bool AccessibilityElement {
+			get => contentCollectionView.AccessibilityElement;
+			set {
+				contentCollectionView.AccessibilityElement = value;
+			}
+		}
+
+		ContentCollectionViewItem contentCollectionView;
 		public override void LoadView ()
 		{
-			Toolkit.NativeEngine.Invoke (() => {
-				frameBox = new Xwt.FrameBox ();
-				View = Toolkit.NativeEngine.GetNativeWidget (frameBox) as NSView;
-
-				imageView = new Xwt.ImageView ();
-				var imageViewNativeBorderContainer = Toolkit.NativeEngine.GetNativeWidget (imageView) as NSView;
-				ImageView = imageViewNativeBorderContainer.Subviews.FirstOrDefault () as NSImageView;
-			});
-
-			frameBox.Content = imageView;
-			frameBox.Show ();
+			View = contentCollectionView = new ContentCollectionViewItem ();
+			contentCollectionView.Identifier = Name;
+			contentCollectionView.BackgroundSelectedColor = Styles.CellBackgroundSelectedColor;
+			contentCollectionView.BorderSelectedColor = Styles.CellBorderSelectedColor;
+			contentCollectionView.BackgroundColor = Styles.CellBackgroundColor;
+			contentCollectionView.EdgeInsets = new NSEdgeInsets (0, 0, 0, 0);
 		}
 
 		public ImageCollectionViewItem (IntPtr handle) : base (handle)
@@ -198,6 +147,8 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 		public NSColor BackgroundColor { get; set; } = NSColor.Control;
 		public NSColor BackgroundSelectedColor { get; set; } = NSColor.SelectedTextBackground;
 		public NSColor BorderSelectedColor { get; internal set; }
+
+		public NSImage BackgroundImage { get; internal set; }
 
 		bool isSelected;
 		public bool IsSelected {
@@ -251,6 +202,15 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			}
 			NSBezierPath.FillRect (dirtyRect);
 
+			if (BackgroundImage != null) {
+				var context = NSGraphicsContext.CurrentContext;
+				context.SaveGraphicsState ();
+
+				var point = (Frame.Width - BackgroundImage.Size.Width) / 2;
+				BackgroundImage.Draw (new CGRect (point, point, BackgroundImage.Size.Width, BackgroundImage.Size.Height));
+				context.RestoreGraphicsState ();
+			}
+
 			if (!IsSelected && isMouseHover && BorderSelectedColor != null) {
 				BorderSelectedColor.Set ();
 				var rect = NSBezierPath.FromRect (new CGRect (dirtyRect.X + 2, dirtyRect.Y + 2, dirtyRect.Width - 4, dirtyRect.Height - 4));
@@ -263,7 +223,6 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 		public ContentCollectionViewItem ()
 		{
 			Orientation = NSUserInterfaceLayoutOrientation.Horizontal;
-			WantsLayer = true;
 		}
 	}
 }

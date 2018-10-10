@@ -39,7 +39,6 @@ namespace MonoDevelop.DesignerSupport.Toolbox.NativeViews
 			HasVerticalScroller = true;
 			HasHorizontalScroller = false;
 			BorderType = NSBorderType.NoBorder;
-			AutomaticallyAdjustsContentInsets = true;
 		}
 	}
 }

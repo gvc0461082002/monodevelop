@@ -24,7 +24,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 				itmView.TextField.StringValue = selectedItem.Text;
 				itmView.TextField.AccessibilityTitle = selectedItem.Text ?? "";
 				//itmView.TextField.AccessibilityHelp = selectedItem.AccessibilityHelp ?? "";
-				itmView.Image = selectedItem.Icon;
+				itmView.ImageView.Image = selectedItem.Icon.ToNative ();
 				//TODO: carefull wih this deprecation (we need a better fix)
 				//ImageView needs modify the AccessibilityElement from it's cell, doesn't work from main view
 				itmView.ImageView.Cell.AccessibilityElement = false;
@@ -33,9 +33,9 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			} else if (item is ImageCollectionViewItem imgView) {
 				var selectedItem = items [(int)indexPath.Section].Items [(int)indexPath.Item];
 				imgView.View.ToolTip = selectedItem.Tooltip ?? "";
-				imgView.Image = selectedItem.Icon;
-				imgView.ImageView.AccessibilityTitle = selectedItem.Text ?? "";
-				imgView.ImageView.AccessibilityElement = true;
+				imgView.Image = selectedItem.Icon.ToNative ();
+				imgView.AccessibilityTitle = selectedItem.Text ?? "";
+				imgView.AccessibilityElement = true;
 				imgView.Selected = false;
 			}
 			return item;

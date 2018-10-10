@@ -7,7 +7,6 @@ using MonoDevelop.Ide.Gui;
 
 namespace MonoDevelop.DesignerSupport.Toolbox
 {
-
 	[Register ("CollectionView")]
 	class CollectionView : NSCollectionView, IToolboxWidget
 	{
@@ -44,14 +43,17 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			}
 
 			var selectedItem = categories [(int)indexPath.Section];
-			item.TextField.StringValue = selectedItem.Text ?? "";
-			item.TextField.AccessibilityTitle = selectedItem.Tooltip ?? "";
-			//item.TextField.AccessibilityHelp = selectedItem.AccessibilityHelp ?? "";
+			item.ExpandButton.AccessibilityTitle = selectedItem.Tooltip ?? "";
+			item.ExpandButton.SetCustomTitle (selectedItem.Text ?? "");
 			item.IsCollapsed = flowLayout.SectionAtIndexIsCollapsed ((nuint)indexPath.Section);
 
-			item.ExpandButton.Clicked += (sender, e) => {
+			//persisting the expanded value over our models (this is not necessary)
+			selectedItem.IsExpanded = !item.IsCollapsed;
+
+			item.ExpandButton.Activated += (sender, e) => {
 				ToggleSectionCollapse (item.View);
 				item.IsCollapsed = flowLayout.SectionAtIndexIsCollapsed ((nuint)indexPath.Section);
+				selectedItem.IsExpanded = !item.IsCollapsed;
 				ReloadData ();
 			};
 
@@ -87,7 +89,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 			flowLayout = new CollectionViewFlowLayout ();
 			flowLayout.SectionHeadersPinToVisibleBounds = true;
-			flowLayout.MinimumInteritemSpacing = 2;
+			flowLayout.MinimumInteritemSpacing = 0;
 			flowLayout.MinimumLineSpacing = 0;
 			flowLayout.SectionFootersPinToVisibleBounds = false;
 			//flowLayout.SectionInset = new NSEdgeInsets(top: 10.0f, left: 20.0f, bottom: 10.0f, right: 20.0f);
@@ -100,7 +102,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			AllowsEmptySelection = true;
 			DataSource = dataSource = new CollectionViewDataSource (categories);
 
-			WantsLayer = true;
+			BackgroundColors = new NSColor[] { Styles.SearchTextFieldLineBackgroundColor };
 		}
 
 		//internal void ResizeViews ()

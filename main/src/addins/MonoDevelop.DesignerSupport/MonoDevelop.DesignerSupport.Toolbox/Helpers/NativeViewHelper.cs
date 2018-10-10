@@ -1,5 +1,6 @@
 ﻿using AppKit;
 using CoreGraphics;
+using Foundation;
 using System.Linq;
 
 namespace MonoDevelop.DesignerSupport.Toolbox
@@ -12,6 +13,15 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			Spacing = spacing,
 			Distribution = NSStackViewDistribution.Fill,
 		};
+
+		public static NSAttributedString GetAttributedString (string text, NSColor foregroundColor, NSFont font)
+		{
+			//There is no need create NSStringAttributes element
+			var attributed = new NSAttributedString (text, new NSStringAttributes {
+				ForegroundColor = foregroundColor, Font = font
+			});
+			return attributed;
+		}
 
 		public static NSTextField CreateLabel (string text, NSTextAlignment alignment = NSTextAlignment.Left, NSFont font = null)
 		{

@@ -143,6 +143,7 @@
     <Compile Include="MonoDevelop.DesignerSupport.Toolbox\NativeViews\ScrollContainerView.cs" />
     <Compile Include="MonoDevelop.DesignerSupport.Toolbox\CollectionView\Styles.cs" />
     <Compile Include="MonoDevelop.DesignerSupport.Toolbox\NativeViews\PaddingView.cs" />
+    <Compile Include="MonoDevelop.DesignerSupport.Toolbox\NativeViews\ExpanderButton.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.DesignerSupport.addin.xml" />

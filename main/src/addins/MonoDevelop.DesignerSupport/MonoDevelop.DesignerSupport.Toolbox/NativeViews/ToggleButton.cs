@@ -124,12 +124,14 @@ namespace MonoDevelop.DesignerSupport.Toolbox.NativeViews
 				NSBezierPath.FillRect (Bounds);
 			}
 
-			var startX = (Frame.Width - Image.Size.Width) / 2;
-			var startY = (Frame.Width - Image.Size.Width) / 2;
-			var context = NSGraphicsContext.CurrentContext;
-			context.SaveGraphicsState ();
-			Image?.Draw (new CGRect (startX, startY, Image.Size.Width, Image.Size.Height));
-			context.RestoreGraphicsState ();
+			if (Image != null) {
+				var startX = (Frame.Width - Image.Size.Width) / 2;
+				var startY = (Frame.Width - Image.Size.Width) / 2;
+				var context = NSGraphicsContext.CurrentContext;
+				context.SaveGraphicsState ();
+				Image.Draw (new CGRect (startX, startY, Image.Size.Width, Image.Size.Height));
+				context.RestoreGraphicsState ();
+			}
 		}
 	}
 }

@@ -24,7 +24,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 				return ImageCollectionViewItem.Size;
 			}
 			var sectionInset = delegateFlowLayout.SectionInset;
-			return new CGSize (collectionView.Frame.Width - sectionInset.Left - sectionInset.Right, LabelCollectionViewItem.ItemHeight);
+			return new CGSize (collectionView.Frame.Width, LabelCollectionViewItem.ItemHeight);
 		}
 
 		public override NSEdgeInsets InsetForSection (NSCollectionView collectionView, NSCollectionViewLayout collectionViewLayout, nint section)
@@ -32,15 +32,15 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			return new NSEdgeInsets (0, 0, 0, 0);
 		}
 
-		//public override CGSize ReferenceSizeForHeader (NSCollectionView collectionView, NSCollectionViewLayout collectionViewLayout, nint section)
-		//{
-		//	if (!IsShowCategories) {
-		//		return CGSize.Empty;
-		//	}
-		//	var delegateFlowLayout = ((CollectionViewFlowLayout)collectionViewLayout);
-		//	var sectionInset = delegateFlowLayout.SectionInset;
-		//	return new CGSize (collectionView.Frame.Width, HeaderCollectionViewItem.SectionHeight);
-		//}
+		public override CGSize ReferenceSizeForHeader (NSCollectionView collectionView, NSCollectionViewLayout collectionViewLayout, nint section)
+		{
+			if (!IsShowCategories) {
+				return CGSize.Empty;
+			}
+			var delegateFlowLayout = ((CollectionViewFlowLayout)collectionViewLayout);
+			var sectionInset = delegateFlowLayout.SectionInset;
+			return new CGSize (collectionView.Frame.Width, HeaderCollectionViewItem.SectionHeight);
+		}
 
 		public override CGSize ReferenceSizeForFooter (NSCollectionView collectionView, NSCollectionViewLayout collectionViewLayout, nint section)
 		{
