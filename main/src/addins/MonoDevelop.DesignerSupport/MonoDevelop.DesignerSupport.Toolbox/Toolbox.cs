@@ -79,7 +79,6 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			Spacing = 0;
 			Distribution = NSStackViewDistribution.Fill;
 
-			//TranslatesAutoresizingMaskIntoConstraints = false;
 			this.toolboxService = toolboxService;
 			this.container = container;
 
@@ -177,6 +176,11 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 				// )(collectionView.Frame);
 				//collectionView.EnclosingScrollView.ScrollPoint(CGPoint.Empty);
+			};
+
+			toolboxWidget.SelectedItemChanged += delegate {
+				selectedNode = this.toolboxWidget.SelectedItem != null ? this.toolboxWidget.SelectedItem.Tag as ItemToolboxNode : null;
+				toolboxService.SelectItem (selectedNode);
 			};
 
 			//set initial state

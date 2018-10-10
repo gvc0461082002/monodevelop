@@ -33,31 +33,28 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 		public void HideTooltipWindow ()
 		{
 			//To implement
+
 		}
 
-		public override NSView MakeSupplementaryView (NSString elementKind, string identifier, NSIndexPath indexPath)
+		public event EventHandler SelectedItemChanged;
+		protected virtual void OnSelectedItemChanged (EventArgs args)
 		{
-			var item = MakeItem (identifier, indexPath) as HeaderCollectionViewItem;
-			if (item == null) {
-				return null;
+			HideTooltipWindow ();
+			SelectedItemChanged?.Invoke (this, args);
+		}
+
+		ToolboxWidgetItem selectedItem;
+		public ToolboxWidgetItem SelectedItem {
+			get {
+				return selectedItem;
 			}
-
-			var selectedItem = categories [(int)indexPath.Section];
-			item.ExpandButton.AccessibilityTitle = selectedItem.Tooltip ?? "";
-			item.ExpandButton.SetCustomTitle (selectedItem.Text ?? "");
-			item.IsCollapsed = flowLayout.SectionAtIndexIsCollapsed ((nuint)indexPath.Section);
-
-			//persisting the expanded value over our models (this is not necessary)
-			selectedItem.IsExpanded = !item.IsCollapsed;
-
-			item.ExpandButton.Activated += (sender, e) => {
-				ToggleSectionCollapse (item.View);
-				item.IsCollapsed = flowLayout.SectionAtIndexIsCollapsed ((nuint)indexPath.Section);
-				selectedItem.IsExpanded = !item.IsCollapsed;
-				ReloadData ();
-			};
-
-			return item.View;
+			set {
+				if (selectedItem != value) {
+					selectedItem = value;
+					ScrollToSelectedItem ();
+					OnSelectedItemChanged (EventArgs.Empty);
+				}
+			}
 		}
 
 		IPadWindow container;
@@ -82,11 +79,10 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 		{
 			Initialize ();
 		}
-
+		ColleccionViewDelegate colleccionViewDelegate;
 		// Shared initialization code
 		public void Initialize ()
 		{
-
 			flowLayout = new CollectionViewFlowLayout ();
 			flowLayout.SectionHeadersPinToVisibleBounds = true;
 			flowLayout.MinimumInteritemSpacing = 0;
@@ -96,12 +92,23 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			//flowLayout.MinimumInteritemSpacing = 20.0f;
 			//flowLayout.MinimumLineSpacing = 20.0f;
 			CollectionViewLayout = flowLayout;
+		
 			Delegate = collectionViewDelegate = new CollectionViewDelegateFlowLayout ();
 			Selectable = true;
 			//AllowsMultipleSelection = true;
 			AllowsEmptySelection = true;
 			DataSource = dataSource = new CollectionViewDataSource (categories);
 
+			Delegate = colleccionViewDelegate = new ColleccionViewDelegate ();
+
+			colleccionViewDelegate.SelectionChanged += (s, e) => {
+				if (e.Count == 0) {
+					return;
+				}
+				if (e.AnyObject is NSIndexPath indexPath) {
+					SelectedItem = categories[(int)indexPath.Section].Items[(int)indexPath.Item];
+				}
+			};
 			BackgroundColors = new NSColor[] { Styles.SearchTextFieldLineBackgroundColor };
 		}
 
@@ -219,6 +226,31 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 				this.iconSize.Width = Math.Max (this.iconSize.Width, (int)item.Icon.Width);
 				this.iconSize.Height = Math.Max (this.iconSize.Height, (int)item.Icon.Height);
 			}
+		}
+
+		public override NSView MakeSupplementaryView (NSString elementKind, string identifier, NSIndexPath indexPath)
+		{
+			var item = MakeItem (identifier, indexPath) as HeaderCollectionViewItem;
+			if (item == null) {
+				return null;
+			}
+
+			var toolboxWidgetCategory = categories[(int)indexPath.Section];
+			item.ExpandButton.AccessibilityTitle = selectedItem.Tooltip ?? "";
+			item.ExpandButton.SetCustomTitle (selectedItem.Text ?? "");
+			item.IsCollapsed = flowLayout.SectionAtIndexIsCollapsed ((nuint)indexPath.Section);
+
+			//persisting the expanded value over our models (this is not necessary)
+			toolboxWidgetCategory.IsExpanded = !item.IsCollapsed;
+
+			item.ExpandButton.Activated += (sender, e) => {
+				ToggleSectionCollapse (item.View);
+				item.IsCollapsed = flowLayout.SectionAtIndexIsCollapsed ((nuint)indexPath.Section);
+				toolboxWidgetCategory.IsExpanded = !item.IsCollapsed;
+				ReloadData ();
+			};
+
+			return item.View;
 		}
 	}
 }
