@@ -148,34 +148,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			Refresh ();
 
 			filterEntry.Changed += (s, e) => {
-				//if (string.IsNullOrEmpty (filterEntry.Text)) {
-				//	toolboxWidget.SetData (items);
-				//} else {
-				//	var collectionHeaderItems = new List<ToolboxWidgetCategory> ();
-				//	for (int i = 0; i < items.Count; i++) {
-				//		var headerItem = new ToolboxWidgetCategory ();
-
-				//		for (int j = 0; j < items [i].Items.Count; j++) {
-				//			if (items [i].Items [j].Label.Contains (filterEntry.Text)) {
-				//				headerItem.Items.Add (items [i].Items [j]);
-				//			}
-
-				//		}
-
-				//		if (headerItem.Items.Count > 0) {
-				//			collectionHeaderItems.Add (headerItem);
-				//		}
-				//	}
-
-				//	toolboxWidget.SetData (collectionHeaderItems);
-
-				//}
-				//toolboxWidget.ReloadData ();
-				//scrollContainer.NeedsDisplay = toolboxWidget.NeedsDisplay = true;
-				//scrollContainer.LayoutSubtreeIfNeeded ();
-
-				// )(collectionView.Frame);
-				//collectionView.EnclosingScrollView.ScrollPoint(CGPoint.Empty);
+				refilter ();
 			};
 
 			toolboxWidget.SelectedItemChanged += delegate {
@@ -189,28 +162,11 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			this.toolboxWidget.IsListMode  = !compactModeToggleButton.Active;
 		}
 
-
 		public override void SetFrameSize (CGSize newSize)
 		{
-			//paddingView.SetFrameSize (new CGSize (newSize.Width, 60));
-			//verticalStackView.SetFrameSize (new CGSize (newSize.Width - 20, 60));
+			toolboxWidget.QueueResize ();
 			base.SetFrameSize (newSize);
 		}
-		//protected override void OnBoundsChanged ()
-		//{
-		//	toolboxWidget.QueueResize ();
-		//	base.OnBoundsChanged ();
-		//}
-
-		//void RefreshData ()
-		//{
-		//	var filteredItems = items;
-
-		//	if (!string.IsNullOrEmpty (filterEntry.Text)) {
-		//		filteredItems = items.Where (h => h.Text.Contains (filterEntry.Text)).ToList ();
-		//	}
-		//	//toolboxWidget.SetData (filteredItems);
-		//}
 
 		#region Toolbar event handlers
 

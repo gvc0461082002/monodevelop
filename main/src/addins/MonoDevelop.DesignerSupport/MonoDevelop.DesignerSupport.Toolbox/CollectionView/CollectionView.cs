@@ -89,13 +89,10 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			flowLayout.MinimumLineSpacing = 0;
 			flowLayout.SectionFootersPinToVisibleBounds = false;
 			//flowLayout.SectionInset = new NSEdgeInsets(top: 10.0f, left: 20.0f, bottom: 10.0f, right: 20.0f);
-			//flowLayout.MinimumInteritemSpacing = 20.0f;
-			//flowLayout.MinimumLineSpacing = 20.0f;
 			CollectionViewLayout = flowLayout;
 		
 			Delegate = collectionViewDelegate = new CollectionViewDelegateFlowLayout ();
 			Selectable = true;
-			//AllowsMultipleSelection = true;
 			AllowsEmptySelection = true;
 			DataSource = dataSource = new CollectionViewDataSource (categories);
 
@@ -156,7 +153,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 		public void ScrollToSelectedItem ()
 		{
-
+			//to implement
 		}
 
 		public IEnumerable<ToolboxWidgetItem> AllItems {
@@ -212,7 +209,6 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 		public void QueueResize ()
 		{
-			ReloadData ();
 			flowLayout.InvalidateLayout ();
 		}
 
