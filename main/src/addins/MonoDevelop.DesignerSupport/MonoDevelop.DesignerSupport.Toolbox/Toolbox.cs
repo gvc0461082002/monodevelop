@@ -53,6 +53,10 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 		IToolboxWidget toolboxWidget;
 		//ScrollContainerView scrolledWindow;
 
+		public event EventHandler DragBegin;
+		public event EventHandler DragSourceUnset;
+		public event EventHandler<Gtk.TargetEntry[]> DragSourceSet;
+
 		NativeViews.ToggleButton catToggleButton;
 		NativeViews.ToggleButton compactModeToggleButton;
 		readonly NativeViews.SearchTextField filterEntry;
@@ -130,7 +134,8 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 			#endregion
 
-			toolboxWidget = new CollectionView (container) {
+			CollectionView collectionView;
+			toolboxWidget = collectionView = new CollectionView (container) {
 				AccessibilityTitle = GettextCatalog.GetString ("Toolbar items"),
 				AccessibilityHelp = GettextCatalog.GetString ("Here are all the toolbox items to select")
 			};
@@ -156,6 +161,12 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 				toolboxService.SelectItem (selectedNode);
 			};
 
+			collectionView.DragBegin += (object sender, EventArgs e) => {
+				if (this.toolboxWidget.SelectedItem != null) {
+					this.toolboxWidget.HideTooltipWindow ();
+					DragBegin?.Invoke (this, e);
+				}
+			};
 			//set initial state
 			this.toolboxWidget.ShowCategories = catToggleButton.Active = true;
 			compactModeToggleButton.Active = MonoDevelop.Core.PropertyService.Get ("ToolboxIsInCompactMode", false);
@@ -295,7 +306,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 			AddItems (toolboxService.GetCurrentToolboxItems ());
 
-			UnsetDrag?.Invoke (this, EventArgs.Empty);  //Drag.SourceUnset (toolboxWidget);
+			DragSourceUnset?.Invoke (this, EventArgs.Empty);
 			toolboxWidget.ClearCategories ();
 
 			var cats = categories.Values.ToList ();
@@ -308,14 +319,11 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			toolboxWidget.QueueResize ();
 			Gtk.TargetEntry[] targetTable = toolboxService.GetCurrentDragTargetTable ();
 			if (targetTable != null)
-				SetDrag?.Invoke (this, EventArgs.Empty); // Drag.SourceSet (toolboxWidget, Gdk.ModifierType.Button1Mask, targetTable, Gdk.DragAction.Copy | Gdk.DragAction.Move);
+				DragSourceSet?.Invoke (this, targetTable); // Drag.SourceSet (toolboxWidget, Gdk.ModifierType.Button1Mask, targetTable, Gdk.DragAction.Copy | Gdk.DragAction.Move);
 			compactModeToggleButton.Visible = toolboxWidget.CanIconizeToolboxCategories;
 			refilter ();
 		}
-
-		public EventHandler SetDrag;
-		public EventHandler UnsetDrag;
-		
+			
 		void ConfigureToolbar ()
 		{
 			// Default configuration

@@ -11,6 +11,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 	class CollectionView : NSCollectionView, IToolboxWidget
 	{
 		public Action<Gdk.EventButton> DoPopupMenu { get; set; }
+		public event EventHandler DragBegin;
 
 		readonly List<ToolboxWidgetCategory> categories = new List<ToolboxWidgetCategory> ();
 
@@ -97,6 +98,9 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			DataSource = dataSource = new CollectionViewDataSource (categories);
 
 			Delegate = colleccionViewDelegate = new ColleccionViewDelegate ();
+			colleccionViewDelegate.DragBegin += (s, e) => {
+				DragBegin?.Invoke (this, EventArgs.Empty);
+			};
 
 			colleccionViewDelegate.SelectionChanged += (s, e) => {
 				if (e.Count == 0) {

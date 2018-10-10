@@ -52,9 +52,21 @@ namespace MonoDevelop.DesignerSupport
 			Xwt.Toolkit.Load (Xwt.ToolkitType.XamMac).Invoke (() => {
 				toolbox = new Toolbox.Toolbox (DesignerSupport.Service.ToolboxService, container);
 			});
-		
+
 			var wd = Xwt.Toolkit.CurrentEngine.WrapWidget (toolbox, NativeWidgetSizing.DefaultPreferredSize);
 			widget = (Gtk.Widget)Xwt.Toolkit.CurrentEngine.GetNativeWidget (wd);
+
+			toolbox.DragSourceUnset += (s, e) => {	
+				Gtk.Drag.SourceUnset (widget);
+			};
+
+			toolbox.DragSourceSet += (s, e) => {
+				Gtk.Drag.SourceSet (widget, Gdk.ModifierType.Button1Mask, e, Gdk.DragAction.Copy | Gdk.DragAction.Move);
+			};
+
+			toolbox.DragBegin += (object sender, EventArgs e) => { 
+				DesignerSupport.Service.ToolboxService.DragSelectedItem (widget, null);
+			};
 		}
 		
 		#region AbstractPadContent implementations
