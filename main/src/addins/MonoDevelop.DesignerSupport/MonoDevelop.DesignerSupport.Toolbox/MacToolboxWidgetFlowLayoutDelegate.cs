@@ -6,12 +6,12 @@ using System.Linq;
 
 namespace MonoDevelop.DesignerSupport.Toolbox
 {
-	class CollectionViewFlowLayout : NSCollectionViewFlowLayout
+	class MacToolboxWidgetFlowLayout : NSCollectionViewFlowLayout
 	{
-
+	
 	}
 
-	class CollectionViewFlowLayoutDelegate : NSCollectionViewDelegateFlowLayout
+	class MacToolboxWidgetFlowLayoutDelegate : NSCollectionViewDelegateFlowLayout
 	{
 		public bool IsOnlyImage { get; set; }
 		public bool IsShowCategories { get; set; }
@@ -31,7 +31,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 		public override CGSize SizeForItem (NSCollectionView collectionView, NSCollectionViewLayout collectionViewLayout, NSIndexPath indexPath)
 		{
-			var categories = ((CollectionView)collectionView).Categories;
+			var categories = ((MacToolboxWidget)collectionView).Categories;
 			var category = categories.ElementAt ((int)indexPath.Section);
 			var selectedItem = category.Items[(int)indexPath.Item];
 			if (!category.IsExpanded || !selectedItem.IsVisible) {
@@ -41,7 +41,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 			if (IsOnlyImage) {
 				return ImageCollectionViewItem.Size;
 			}
-			var delegateFlowLayout = (CollectionViewFlowLayout)collectionViewLayout;
+			var delegateFlowLayout = (MacToolboxWidgetFlowLayout)collectionViewLayout;
 			var sectionInset = delegateFlowLayout.SectionInset;
 			return new CGSize (collectionView.Frame.Width - sectionInset.Right - sectionInset.Left, LabelCollectionViewItem.ItemHeight);
 		}
@@ -53,12 +53,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 		public override CGSize ReferenceSizeForHeader (NSCollectionView collectionView, NSCollectionViewLayout collectionViewLayout, nint section)
 		{
-			if (!IsShowCategories) {
-				return CGSize.Empty;
-			}
-			var delegateFlowLayout = ((CollectionViewFlowLayout)collectionViewLayout);
-			var sectionInset = delegateFlowLayout.SectionInset;
-			return new CGSize (collectionView.Frame.Width, HeaderCollectionViewItem.SectionHeight);
+			return new CGSize (0, 1);
 		}
 
 		public override CGSize ReferenceSizeForFooter (NSCollectionView collectionView, NSCollectionViewLayout collectionViewLayout, nint section)

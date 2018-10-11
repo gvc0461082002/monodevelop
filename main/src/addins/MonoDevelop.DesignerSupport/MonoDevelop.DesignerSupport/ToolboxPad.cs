@@ -38,7 +38,7 @@ namespace MonoDevelop.DesignerSupport
 {
 	public class ToolboxPad : PadContent
 	{
-		Toolbox.Toolbox toolbox;
+		Toolbox.MacToolbox toolbox;
 		Gtk.Widget widget;
 
 		public ToolboxPad ()
@@ -50,7 +50,7 @@ namespace MonoDevelop.DesignerSupport
 			base.Initialize (container);
 
 			Xwt.Toolkit.Load (Xwt.ToolkitType.XamMac).Invoke (() => {
-				toolbox = new Toolbox.Toolbox (DesignerSupport.Service.ToolboxService, container);
+				toolbox = new Toolbox.MacToolbox (DesignerSupport.Service.ToolboxService, container);
 			});
 
 			var wd = Xwt.Toolkit.CurrentEngine.WrapWidget (toolbox, NativeWidgetSizing.DefaultPreferredSize);

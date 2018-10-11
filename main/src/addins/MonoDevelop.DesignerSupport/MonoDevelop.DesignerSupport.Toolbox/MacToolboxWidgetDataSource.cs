@@ -4,12 +4,12 @@ using AppKit;
 using Foundation;
 namespace MonoDevelop.DesignerSupport.Toolbox
 {
-	class CollectionViewDataSource : NSCollectionViewDataSource
+	class MacToolboxWidgetDataSource : NSCollectionViewDataSource
 	{
 		public bool IsOnlyImage { get; set; }
 
 		readonly List<ToolboxWidgetCategory> items;
-		public CollectionViewDataSource (List<ToolboxWidgetCategory> items)
+		public MacToolboxWidgetDataSource (List<ToolboxWidgetCategory> items)
 		{
 			this.items = items;
 		}

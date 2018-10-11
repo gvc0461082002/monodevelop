@@ -43,8 +43,7 @@ using CoreGraphics;
 
 namespace MonoDevelop.DesignerSupport.Toolbox
 {
-
-	public class Toolbox : NSStackView, IPropertyPadProvider, IToolboxConfiguration
+	public class MacToolbox : NSStackView, IPropertyPadProvider, IToolboxConfiguration
 	{
 		ToolboxService toolboxService;
 
@@ -76,7 +75,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 		const int IconsSpacing = 4;
 
-		public Toolbox (ToolboxService toolboxService, IPadWindow container)
+		public MacToolbox (ToolboxService toolboxService, IPadWindow container)
 		{
 			Orientation = NSUserInterfaceLayoutOrientation.Vertical;
 			Alignment = NSLayoutAttribute.Leading;
@@ -134,8 +133,8 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 			#endregion
 
-			CollectionView collectionView;
-			toolboxWidget = collectionView = new CollectionView (container) {
+			MacToolboxWidget collectionView;
+			toolboxWidget = collectionView = new MacToolboxWidget (container) {
 				AccessibilityTitle = GettextCatalog.GetString ("Toolbar items"),
 				AccessibilityHelp = GettextCatalog.GetString ("Here are all the toolbox items to select")
 			};

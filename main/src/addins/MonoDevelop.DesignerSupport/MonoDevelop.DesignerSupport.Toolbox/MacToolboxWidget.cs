@@ -8,16 +8,16 @@ using MonoDevelop.Ide.Gui;
 namespace MonoDevelop.DesignerSupport.Toolbox
 {
 	[Register ("CollectionView")]
-	class CollectionView : NSCollectionView, IToolboxWidget
+	class MacToolboxWidget : NSCollectionView, IToolboxWidget
 	{
 		public Action<Gdk.EventButton> DoPopupMenu { get; set; }
 		public event EventHandler DragBegin;
 
 		readonly List<ToolboxWidgetCategory> categories = new List<ToolboxWidgetCategory> ();
 
-		CollectionViewDataSource dataSource;
-		CollectionViewFlowLayoutDelegate collectionViewDelegate;
-		CollectionViewFlowLayout flowLayout;
+		MacToolboxWidgetDataSource dataSource;
+		MacToolboxWidgetFlowLayoutDelegate collectionViewDelegate;
+		MacToolboxWidgetFlowLayout flowLayout;
 
 		public IEnumerable<ToolboxWidgetCategory> Categories {
 			get { return categories; }
@@ -34,7 +34,6 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 		public void HideTooltipWindow ()
 		{
 			//To implement
-
 		}
 
 		public event EventHandler SelectedItemChanged;
@@ -66,7 +65,7 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 
 		IPadWindow container;
 
-		public CollectionView (IPadWindow container) : base ()
+		public MacToolboxWidget (IPadWindow container) : base ()
 		{
 			this.container = container;
 			container.PadContentShown += OnContainerIsShown;
@@ -75,14 +74,14 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 		}
 
 		// Called when created from unmanaged code
-		public CollectionView (IntPtr handle) : base (handle)
+		public MacToolboxWidget (IntPtr handle) : base (handle)
 		{
 			Initialize ();
 		}
 
 		// Called when created directly from a XIB file
 		[Export ("initWithCoder:")]
-		public CollectionView (NSCoder coder) : base (coder)
+		public MacToolboxWidget (NSCoder coder) : base (coder)
 		{
 			Initialize ();
 		}
@@ -90,18 +89,17 @@ namespace MonoDevelop.DesignerSupport.Toolbox
 		// Shared initialization code
 		public void Initialize ()
 		{
-			flowLayout = new CollectionViewFlowLayout ();
+			flowLayout = new MacToolboxWidgetFlowLayout ();
 			flowLayout.SectionHeadersPinToVisibleBounds = true;
 			flowLayout.MinimumInteritemSpacing = 0;
 			flowLayout.MinimumLineSpacing = 0;
 			flowLayout.SectionFootersPinToVisibleBounds = false;
-			//flowLayout.SectionInset = new NSEdgeInsets(top: 10.0f, left: 20.0f, bottom: 10.0f, right: 20.0f);
 			CollectionViewLayout = flowLayout;
 		
-			Delegate = collectionViewDelegate = new CollectionViewFlowLayoutDelegate ();
+			Delegate = collectionViewDelegate = new MacToolboxWidgetFlowLayoutDelegate ();
 			Selectable = true;
 			AllowsEmptySelection = true;
-			DataSource = dataSource = new CollectionViewDataSource (categories);
+			DataSource = dataSource = new MacToolboxWidgetDataSource (categories);
 
 			collectionViewDelegate.DragBegin += (s, e) => {
 				DragBegin?.Invoke (this, EventArgs.Empty);
