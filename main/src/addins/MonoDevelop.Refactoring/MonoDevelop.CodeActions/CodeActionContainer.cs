@@ -67,6 +67,22 @@ namespace MonoDevelop.CodeActions
 
 		public TextSpan Span { get; internal set; }
 
+		public bool FloatingWidgetShown { get; internal set; }
+
+		internal SourceEditor.SmartTagSeverity GetSmartTagSeverity ()
+		{
+			var result = SourceEditor.SmartTagSeverity.OnlyActions;
+			foreach (var fix in CodeFixActions) {
+				if (fix.FirstDiagnostic.Severity == DiagnosticSeverity.Error) {
+					return SourceEditor.SmartTagSeverity.ErrorFixes;
+				}
+				if (fix.FirstDiagnostic.Severity == DiagnosticSeverity.Warning)
+					result = SourceEditor.SmartTagSeverity.Fixes;
+			}
+
+			return result;
+		}
+
 		internal CodeActionContainer (ImmutableArray<CodeFixCollection> codeDiagnosticActions, ImmutableArray<CodeRefactoring> codeRefactoringActions)
 		{
 			CodeFixActions = codeDiagnosticActions;

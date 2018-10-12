@@ -45,12 +45,22 @@ namespace Mono.TextEditor
 
 			editor.Document.MarkerAdded += OnMarkerAdded;
 			editor.Document.MarkerRemoved += OnMarkerRemoved;
+			this.editor.Caret.PositionChanged += HandlePositionChanged; 
+		}
+
+		void HandlePositionChanged (object sender, MonoDevelop.Ide.Editor.DocumentLocationEventArgs e)
+		{
+			if (e.Location.Line == editor.Caret.Line)
+				return;
+			editor.RedrawMarginLine (this, e.Location.Line);
+			editor.RedrawMarginLine (this, editor.Caret.Line);
 		}
 
 		public override void Dispose ()
 		{
 			editor.Document.MarkerAdded -= OnMarkerAdded;
 			editor.Document.MarkerRemoved -= OnMarkerRemoved;
+			editor.Caret.PositionChanged -= HandlePositionChanged; ;
 
 			if (markerToAccessible != null) {
 				foreach (var proxy in markerToAccessible.Values) {
@@ -150,9 +160,13 @@ namespace Mono.TextEditor
 			}
 
 			if (!backgroundIsDrawn) {
-				cr.Rectangle (x, y, Width, lineHeight);
-				cr.SetSourceColor (backgroundColor);
-				cr.Fill ();
+				if (editor.Caret.Line == lineNumber) {
+					editor.TextViewMargin.DrawCaretLineMarker (cr, x, y, Width, lineHeight);
+				} else {
+					cr.Rectangle (x, y, Width, lineHeight);
+					cr.SetSourceColor (backgroundColor);
+					cr.Fill ();
+				}
 			}
 
 			if (line != null && lineNumber <= editor.Document.LineCount) {

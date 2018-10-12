@@ -71,8 +71,6 @@ namespace MonoDevelop.CodeActions
 		void RemoveWidget ()
 		{
 			if (smartTagMarginMarker != null) {
-				currentSmartTagBegin = -1;
-
 				Editor.RemoveMarker (smartTagMarginMarker);
 				smartTagMarginMarker = null;
 			}
@@ -199,7 +197,7 @@ namespace MonoDevelop.CodeActions
 				if (menuAction != null)
 					menuAction (menu);
 
-				var p = point ?? Editor.LocationToPoint (Editor.OffsetToLocation (currentSmartTagBegin));
+				var p = point ?? Editor.LocationToPoint (Editor.CaretLocation);
 				Widget widget = Editor;
 				var rect = new Gdk.Rectangle (
 					(int)p.X + widget.Allocation.X,
@@ -228,13 +226,17 @@ namespace MonoDevelop.CodeActions
 				Editor.SuppressTooltips = true;
 				if (menuAction != null)
 					menuAction (menu);
-
-				var p = point ?? Editor.LocationToPoint (Editor.OffsetToLocation (currentSmartTagBegin));
+				Gdk.Rectangle rect;
 				Widget widget = Editor;
-				var rect = new Gdk.Rectangle (
-					(int)p.X + widget.Allocation.X,
-					(int)p.Y + widget.Allocation.Y, 0, 0);
 
+				if (!point.HasValue) {
+					var p = Editor.LocationToPoint (Editor.CaretLocation);
+					rect = new Gdk.Rectangle (
+						(int)p.X + widget.Allocation.X,
+						(int)p.Y + widget.Allocation.Y, 0, 0);
+				} else {
+					rect = new Gdk.Rectangle ((int)point.Value.X, (int)point.Value.Y, 0, 0);
+				}
 				ShowFixesMenu (widget, rect, menu);
 			}
 		}
@@ -309,7 +311,7 @@ namespace MonoDevelop.CodeActions
 		}
 
 		SourceEditor.SmartTagMarginMarker smartTagMarginMarker;
-		int currentSmartTagBegin;
+		private ITextSourceVersion beginVersion;
 
 		void CreateSmartTag (CodeActionContainer fixes, int offset)
 		{
@@ -327,41 +329,18 @@ namespace MonoDevelop.CodeActions
 				return;
 			}
 
-			bool first = true;
-			var smartTagLocBegin = offset;
-			foreach (var fix in fixes.CodeFixActions) {
-				var textSpan = fix.TextSpan;
-				if (textSpan.IsEmpty)
-					continue;
-				if (first || offset < textSpan.Start) {
-					smartTagLocBegin = textSpan.Start;
-				}
-				first = false;
+			var severity = fixes.GetSmartTagSeverity ();
+
+			if (smartTagMarginMarker?.Line?.LineNumber != editor.CaretLine) {
+				RemoveWidget ();
+				smartTagMarginMarker = new SourceEditor.SmartTagMarginMarker () { SmartTagSeverity = severity };
+				smartTagMarginMarker.ShowPopup += SmartTagMarginMarker_ShowPopup;
+				editor.AddMarker (editor.GetLine (editor.CaretLine), smartTagMarginMarker);
+			} else {
+				smartTagMarginMarker.SmartTagSeverity = severity;
+				var view = editor.GetContent<SourceEditorView> ();
+				view.TextEditor.RedrawMarginLine (view.TextEditor.TextArea.QuickFixMargin, editor.CaretLine);
 			}
-
-			if (currentSmartTagBegin == smartTagLocBegin) {
-				return;
-			}
-			RemoveWidget ();
-			currentSmartTagBegin = smartTagLocBegin;
-			SourceEditor.SmartTagSeverity severity = SmartTagSeverity.OnlyActions;
-			foreach (var fix in fixes.CodeFixActions) {
-				if (fix.FirstDiagnostic.Severity == DiagnosticSeverity.Error) {
-					severity = SourceEditor.SmartTagSeverity.ErrorFixes;
-					break;
-				}
-				if (fix.FirstDiagnostic.Severity == DiagnosticSeverity.Warning) {
-					severity = SourceEditor.SmartTagSeverity.Fixes;
-				}
-			}
-
-			var realLoc = Editor.OffsetToLocation (smartTagLocBegin);
-
-			smartTagMarginMarker = new SourceEditor.SmartTagMarginMarker ();
-			smartTagMarginMarker.ShowPopup += SmartTagMarginMarker_ShowPopup; ;
-			smartTagMarginMarker.SmartTagSeverity = severity;
-
-			editor.AddMarker (editor.GetLine (realLoc.Line), smartTagMarginMarker);
 		}
 
 		void SmartTagMarginMarker_ShowPopup (object sender, EventArgs e)
@@ -383,12 +362,19 @@ namespace MonoDevelop.CodeActions
 			Editor.MouseMoved += HandleBeginHover;
 			Editor.CaretPositionChanged += HandleCaretPositionChanged;
 			Editor.TextChanged += Editor_TextChanged;
+			Editor.BeginAtomicUndoOperation += Editor_BeginAtomicUndoOperation;
 			Editor.EndAtomicUndoOperation += Editor_EndAtomicUndoOperation;
+		}
+
+		void Editor_BeginAtomicUndoOperation (object sender, EventArgs e)
+		{
+			beginVersion = Editor.Version;
 		}
 
 		void Editor_EndAtomicUndoOperation (object sender, EventArgs e)
 		{
-			RemoveWidget ();
+			if (beginVersion.CompareAge (Editor.Version) != 0)
+				RemoveWidget ();
 		}
 
 		void Editor_TextChanged (object sender, MonoDevelop.Core.Text.TextChangeEventArgs e)
@@ -425,7 +411,6 @@ namespace MonoDevelop.CodeActions
 			if (!AnalysisOptions.EnableFancyFeatures || smartTagMarginMarker == null) {
 				//Fixes = RefactoringService.GetValidActions (Editor, DocumentContext, Editor.CaretLocation).Result;
 
-				currentSmartTagBegin = Editor.CaretOffset;
 				PopupQuickFixMenu (null, null);
 				return;
 			}

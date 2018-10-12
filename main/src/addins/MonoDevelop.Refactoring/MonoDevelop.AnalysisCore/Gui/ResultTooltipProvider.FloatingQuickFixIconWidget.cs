@@ -1,0 +1,126 @@
+﻿//
+// ResultTooltipProvider.FloatingQuickFixIconWidget.cs
+//
+// Author:
+//       Mike Krüger <mikkrg@microsoft.com>
+//
+// Copyright (c) 2018 Microsoft Corporation. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+
+using System;
+using MonoDevelop.Ide.Editor;
+using MonoDevelop.SourceEditor;
+using MonoDevelop.Components;
+using MonoDevelop.CodeActions;
+using Gdk;
+
+namespace MonoDevelop.AnalysisCore.Gui
+{
+	partial class ResultTooltipProvider
+	{
+		partial class FloatingQuickFixIconWidget : Gtk.Window
+		{
+			readonly CodeActionEditorExtension ext;
+			private readonly LanguageItemWindow window;
+			readonly SourceEditorView sourceEditorView;
+			readonly CodeActionContainer fixes;
+			readonly Cairo.Point point;
+			private uint destroyTimeout;
+
+			public FloatingQuickFixIconWidget (CodeActionEditorExtension codeActionEditorExtension, LanguageItemWindow window, SourceEditorView sourceEditorView, SourceEditor.SmartTagSeverity severity, CodeActionContainer fixes, Cairo.Point point) : base (Gtk.WindowType.Popup)
+			{
+				this.ext = codeActionEditorExtension;
+				this.window = window;
+				this.sourceEditorView = sourceEditorView;
+				this.fixes = fixes;
+				this.point = point;
+				this.Decorated = false;
+				this.Events |= EventMask.ButtonPressMask;
+				TypeHint = Gdk.WindowTypeHint.Utility;
+				var fr = new Gtk.HBox ();
+				fr.BorderWidth = 2;
+				var view = new Gtk.Image ();
+				view.Pixbuf = SmartTagMarginMarker.GetIcon (severity).ToPixbuf ();
+				fr.PackStart (view, false, false, 0);
+				fr.PackEnd (new RectangleMarker (), false, false, 0);
+				Add (fr);
+				LeaveNotifyEvent += FloatingQuickFixIconWidget_LeaveNotifyEvent;
+				ext.FixesMenuClosed += Ext_FixesMenuClosed;
+				ShowAll ();
+			}
+
+			void Ext_FixesMenuClosed (object sender, EventArgs e)
+			{
+				Destroy ();
+			}
+
+			protected override bool OnEnterNotifyEvent (Gdk.EventCrossing evnt)
+			{
+				CancelDestroy ();
+				return base.OnEnterNotifyEvent (evnt);
+			}
+
+			void FloatingQuickFixIconWidget_LeaveNotifyEvent (object o, Gtk.LeaveNotifyEventArgs args)
+			{
+				QueueDestroy ();
+			}
+
+			protected override bool OnButtonPressEvent (Gdk.EventButton evnt)
+			{
+				ext.CancelSmartTagPopupTimeout ();
+				LeaveNotifyEvent -= FloatingQuickFixIconWidget_LeaveNotifyEvent;
+				ext.smartTagPopupTimeoutId = GLib.Timeout.Add (150, delegate {
+					ext.PopupQuickFixMenu (null, fixes, menu => { }, new Xwt.Point (
+						point.X, 
+						point.Y + Allocation.Height + 10));
+					ext.smartTagPopupTimeoutId = 0;
+					return false;
+				});
+				return base.OnButtonPressEvent (evnt);
+			}
+
+			protected override void OnDestroyed ()
+			{
+				ext.FixesMenuClosed -= Ext_FixesMenuClosed;
+				CancelDestroy ();
+				window.Destroy ();
+				base.OnDestroyed ();
+			}
+
+			internal void CancelDestroy ()
+			{
+				if (destroyTimeout > 0) {
+					GLib.Source.Remove (destroyTimeout);
+					destroyTimeout = 0;
+				}
+			}
+
+			internal void QueueDestroy ()
+			{
+				destroyTimeout = GLib.Timeout.Add (500, delegate {
+					destroyTimeout = 0;
+					Destroy ();
+					return false;
+				});
+			}
+		}
+	}
+}
