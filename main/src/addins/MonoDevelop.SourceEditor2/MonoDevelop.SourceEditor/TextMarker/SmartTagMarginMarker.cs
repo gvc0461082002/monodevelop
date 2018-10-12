@@ -64,11 +64,11 @@ namespace MonoDevelop.SourceEditor
 		{
 			switch (severity) {
 			case SmartTagSeverity.Fixes:
-				return ImageService.GetIcon (Ide.Gui.Stock.Warning, Gtk.IconSize.Menu);
+				return ImageService.GetIcon ("md-lightbulb", Gtk.IconSize.Menu);
 			case SmartTagSeverity.ErrorFixes:
-				return ImageService.GetIcon (Ide.Gui.Stock.Error, Gtk.IconSize.Menu);
+				return ImageService.GetIcon ("md-lightbulb-error", Gtk.IconSize.Menu);
 			default:
-				return ImageService.GetIcon (Ide.Gui.Stock.Information, Gtk.IconSize.Menu);
+				return ImageService.GetIcon ("md-lightbulb-screwdriver", Gtk.IconSize.Menu);
 			}
 		}
 

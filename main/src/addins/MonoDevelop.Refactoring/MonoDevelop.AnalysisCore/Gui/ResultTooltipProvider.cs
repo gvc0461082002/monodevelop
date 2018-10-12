@@ -56,6 +56,8 @@ namespace MonoDevelop.AnalysisCore.Gui
 			int markerOffset = -1, markerEndOffset = -1;
 			foreach (var marker in editor.GetTextSegmentMarkersAt (offset)) {
 				if (marker.Tag is Result result) {
+					if (result.Level == Microsoft.CodeAnalysis.DiagnosticSeverity.Hidden)
+						continue;
 					if (markerOffset < 0) {
 						markerOffset = marker.Offset;
 						markerEndOffset = marker.EndOffset;
@@ -66,79 +68,78 @@ namespace MonoDevelop.AnalysisCore.Gui
 					results.Add (result);
 				}
 			}
-			if (results.Count > 0) {
-				var sb = StringBuilderCache.Allocate ();
-				sb.Append ("<span font='");
-				sb.Append (FontService.SansFontName);
-				sb.Append ("' size='small'>");
-				int minOffset = int.MaxValue;
-				int maxOffset = -1;
-				for (int i = 0; i < results.Count; i++) {
-					var r = results [i];
-					var escapedMessage = Ambience.EscapeText (r.Message);
-					if (i > 0)
-						sb.AppendLine ();
-					minOffset = Math.Min (minOffset, r.Region.Start);
-					maxOffset = Math.Max (maxOffset, r.Region.End);
-					if (results.Count > 1) {
-						string severity;
-						HslColor color;
-						switch (r.Level) {
-						case Microsoft.CodeAnalysis.DiagnosticSeverity.Info:
-							severity = GettextCatalog.GetString ("Info");
-							editor.Options.GetEditorTheme ().TryGetColor (EditorThemeColors.UnderlineSuggestion, out color);
-							break;
-						case Microsoft.CodeAnalysis.DiagnosticSeverity.Warning:
-							severity = GettextCatalog.GetString ("Warning");
-							editor.Options.GetEditorTheme ().TryGetColor (EditorThemeColors.UnderlineWarning, out color);
-							break;
-						case Microsoft.CodeAnalysis.DiagnosticSeverity.Error:
-							severity = GettextCatalog.GetString ("Error");
-							editor.Options.GetEditorTheme ().TryGetColor (EditorThemeColors.UnderlineError, out color);
-							break;
-						default:
-							severity = "?";
-							editor.Options.GetEditorTheme ().TryGetColor (EditorThemeColors.UnderlineSuggestion, out color);
-							break;
-						}
-						sb.AppendFormat ("<span foreground ='{2}'font_weight='bold'>{0}</span>: {1}", severity, escapedMessage, color.ToPangoString ());
-					} else {
-						sb.Append (escapedMessage);
+			if (results.Count == 0)
+				return null;
+			var sb = StringBuilderCache.Allocate ();
+			sb.Append ("<span font='");
+			sb.Append (FontService.SansFontName);
+			sb.Append ("' size='small'>");
+			int minOffset = int.MaxValue;
+			int maxOffset = -1;
+			for (int i = 0; i < results.Count; i++) {
+				var r = results [i];
+				var escapedMessage = Ambience.EscapeText (r.Message);
+				if (i > 0)
+					sb.AppendLine ();
+				minOffset = Math.Min (minOffset, r.Region.Start);
+				maxOffset = Math.Max (maxOffset, r.Region.End);
+				if (results.Count > 1) {
+					string severity;
+					HslColor color;
+					switch (r.Level) {
+					case Microsoft.CodeAnalysis.DiagnosticSeverity.Info:
+						severity = GettextCatalog.GetString ("Info");
+						editor.Options.GetEditorTheme ().TryGetColor (EditorThemeColors.UnderlineSuggestion, out color);
+						break;
+					case Microsoft.CodeAnalysis.DiagnosticSeverity.Warning:
+						severity = GettextCatalog.GetString ("Warning");
+						editor.Options.GetEditorTheme ().TryGetColor (EditorThemeColors.UnderlineWarning, out color);
+						break;
+					case Microsoft.CodeAnalysis.DiagnosticSeverity.Error:
+						severity = GettextCatalog.GetString ("Error");
+						editor.Options.GetEditorTheme ().TryGetColor (EditorThemeColors.UnderlineError, out color);
+						break;
+					default:
+						severity = "?";
+						editor.Options.GetEditorTheme ().TryGetColor (EditorThemeColors.UnderlineSuggestion, out color);
+						break;
 					}
+					sb.AppendFormat ("<span foreground ='{2}'font_weight='bold'>{0}</span>: {1}", severity, escapedMessage, color.ToPangoString ());
+				} else {
+					sb.Append (escapedMessage);
 				}
-
-				sb.Append ("</span>");
-				CodeActions.CodeActionContainer tag = null;
-				try {
-					var ad = ctx.AnalysisDocument;
-					var root = await ad.GetSyntaxRootAsync (token);
-					if (root.Span.End < offset) {
-						LoggingService.LogError ($"Error in ResultTooltipProvider.GetItem offset {offset} not inside syntax root {root.Span.End} document length {editor.Length}.");
-					} else {
-						var codeFixService = Ide.Composition.CompositionManager.GetExportedValue<ICodeFixService> ();
-						var span = new TextSpan (offset, 0);
-						var fixes = await codeFixService.GetFixesAsync (ad, span, true, token);
-						var codeRefactoringService = Ide.Composition.CompositionManager.GetExportedValue<Microsoft.CodeAnalysis.CodeRefactorings.ICodeRefactoringService> ();
-						var refactorings = await codeRefactoringService.GetRefactoringsAsync (ad, span, token);
-						tag = new CodeActions.CodeActionContainer (fixes, refactorings) {
-							Span = new TextSpan (minOffset, Math.Max (0,  maxOffset - minOffset))
-						};
-					}
-				} catch (AggregateException ae) {
-					ae.Flatten ().Handle (aex => aex is OperationCanceledException);
-				} catch (OperationCanceledException) {
-				} catch (TargetInvocationException ex) {
-					if (!(ex.InnerException is OperationCanceledException))
-						throw;
-				}
-
-				var tooltipInfo = new TaggedTooltipInformation<CodeActions.CodeActionContainer> {
-					SignatureMarkup = StringBuilderCache.ReturnAndFree (sb),
-					Tag = tag
-				};
-				return new TooltipItem (tooltipInfo, markerOffset, markerEndOffset - markerOffset);
 			}
-			return null;
+
+			sb.Append ("</span>");
+			CodeActions.CodeActionContainer tag = null;
+			try {
+				var ad = ctx.AnalysisDocument;
+				var root = await ad.GetSyntaxRootAsync (token);
+				if (root.Span.End < offset) {
+					LoggingService.LogError ($"Error in ResultTooltipProvider.GetItem offset {offset} not inside syntax root {root.Span.End} document length {editor.Length}.");
+				} else {
+					var codeFixService = Ide.Composition.CompositionManager.GetExportedValue<ICodeFixService> ();
+					var span = new TextSpan (offset, 0);
+					var fixes = await codeFixService.GetFixesAsync (ad, span, true, token);
+					var codeRefactoringService = Ide.Composition.CompositionManager.GetExportedValue<Microsoft.CodeAnalysis.CodeRefactorings.ICodeRefactoringService> ();
+					var refactorings = await codeRefactoringService.GetRefactoringsAsync (ad, span, token);
+					tag = new CodeActions.CodeActionContainer (fixes, refactorings) {
+						Span = new TextSpan (minOffset, Math.Max (0,  maxOffset - minOffset))
+					};
+				}
+			} catch (AggregateException ae) {
+				ae.Flatten ().Handle (aex => aex is OperationCanceledException);
+			} catch (OperationCanceledException) {
+			} catch (TargetInvocationException ex) {
+				if (!(ex.InnerException is OperationCanceledException))
+					throw;
+			}
+
+			var tooltipInfo = new TaggedTooltipInformation<CodeActions.CodeActionContainer> {
+				SignatureMarkup = StringBuilderCache.ReturnAndFree (sb),
+				Tag = tag
+			};
+			return new TooltipItem (tooltipInfo, markerOffset, markerEndOffset - markerOffset);
 		}
 
 		public override Window CreateTooltipWindow (TextEditor editor, DocumentContext ctx, TooltipItem item, int offset, Xwt.ModifierKeys modifierState)
@@ -261,7 +262,6 @@ namespace MonoDevelop.AnalysisCore.Gui
 				var view = new Gtk.Image ();
 				view.Pixbuf = SmartTagMarginMarker.GetIcon (severity).ToPixbuf ();
 				fr.Add (view);
-				view.SetPadding (4, 4);
 				Add (fr);
 				LeaveNotifyEvent += FloatingQuickFixIconWidget_LeaveNotifyEvent;
 				ext.FixesMenuClosed += Ext_FixesMenuClosed;
