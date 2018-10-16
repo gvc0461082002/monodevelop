@@ -2382,6 +2382,8 @@ namespace MonoDevelop.SourceEditor
 				return TextEditor.GetTextEditorData ();
 			if (type.Equals (typeof (IDocumentReloadPresenter)))
 				return widget;
+			if (type.Equals (typeof (Microsoft.VisualStudio.Text.ITextDocument)))
+				return Document.VsTextDocument;
 			return base.OnGetContent (type);
 		}
 
