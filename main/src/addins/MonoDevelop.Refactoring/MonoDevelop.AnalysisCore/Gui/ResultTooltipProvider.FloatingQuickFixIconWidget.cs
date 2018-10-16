@@ -31,6 +31,7 @@ using MonoDevelop.SourceEditor;
 using MonoDevelop.Components;
 using MonoDevelop.CodeActions;
 using Gdk;
+using System.Windows.Input;
 
 namespace MonoDevelop.AnalysisCore.Gui
 {
@@ -53,7 +54,7 @@ namespace MonoDevelop.AnalysisCore.Gui
 				this.fixes = fixes;
 				this.point = point;
 				this.Decorated = false;
-				this.Events |= EventMask.ButtonPressMask;
+				this.Events |= EventMask.ButtonPressMask | EventMask.LeaveNotifyMask | EventMask.EnterNotifyMask;
 				TypeHint = Gdk.WindowTypeHint.Utility;
 				var fr = new Gtk.HBox ();
 				fr.BorderWidth = 2;
@@ -62,8 +63,8 @@ namespace MonoDevelop.AnalysisCore.Gui
 				fr.PackStart (view, false, false, 0);
 				fr.PackEnd (new RectangleMarker (), false, false, 0);
 				Add (fr);
-				LeaveNotifyEvent += FloatingQuickFixIconWidget_LeaveNotifyEvent;
 				ext.FixesMenuClosed += Ext_FixesMenuClosed;
+
 				ShowAll ();
 			}
 
@@ -78,15 +79,19 @@ namespace MonoDevelop.AnalysisCore.Gui
 				return base.OnEnterNotifyEvent (evnt);
 			}
 
-			void FloatingQuickFixIconWidget_LeaveNotifyEvent (object o, Gtk.LeaveNotifyEventArgs args)
+			protected override bool OnLeaveNotifyEvent (EventCrossing evnt)
 			{
-				QueueDestroy ();
+				if (ext.smartTagPopupTimeoutId == 0) {
+					if (!this.IsMouseOver ()) {
+						QueueDestroy ();
+					}
+				}
+				return base.OnLeaveNotifyEvent (evnt);
 			}
 
 			protected override bool OnButtonPressEvent (Gdk.EventButton evnt)
 			{
 				ext.CancelSmartTagPopupTimeout ();
-				LeaveNotifyEvent -= FloatingQuickFixIconWidget_LeaveNotifyEvent;
 				ext.smartTagPopupTimeoutId = GLib.Timeout.Add (150, delegate {
 					ext.PopupQuickFixMenu (null, fixes, menu => { }, new Xwt.Point (
 						point.X, 
@@ -113,13 +118,21 @@ namespace MonoDevelop.AnalysisCore.Gui
 				}
 			}
 
-			internal void QueueDestroy ()
+			internal void QueueDestroy (uint timer = 500)
 			{
-				destroyTimeout = GLib.Timeout.Add (500, delegate {
-					destroyTimeout = 0;
+				if (destroyTimeout != 0)
+					return;
+				destroyTimeout = GLib.Timeout.Add (timer, delegate {
 					Destroy ();
+					destroyTimeout = 0;
 					return false;
 				});
+			}
+
+			internal bool IsMouseNear ()
+			{
+				GetPointer (out int x, out int y);
+				return x >= -Allocation.Width && y >= -Allocation.Height && x <= Allocation.Width && y <= Allocation.Height;
 			}
 		}
 	}

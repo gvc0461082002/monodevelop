@@ -61,7 +61,6 @@ namespace MonoDevelop.CodeActions
 
 		internal void CancelSmartTagPopupTimeout ()
 		{
-
 			if (smartTagPopupTimeoutId != 0) {
 				GLib.Source.Remove (smartTagPopupTimeoutId);
 				smartTagPopupTimeoutId = 0;
@@ -83,7 +82,6 @@ namespace MonoDevelop.CodeActions
 			RefactoringPreviewTooltipWindow.HidePreviewTooltip ();
 			Editor.CaretPositionChanged -= HandleCaretPositionChanged;
 			DocumentContext.DocumentParsed -= HandleDocumentDocumentParsed;
-			Editor.MouseMoved -= HandleBeginHover;
 			Editor.TextChanged -= Editor_TextChanged;
 			Editor.EndAtomicUndoOperation -= Editor_EndAtomicUndoOperation;
 			RemoveWidget ();
@@ -359,7 +357,6 @@ namespace MonoDevelop.CodeActions
 		{
 			base.Initialize ();
 			DocumentContext.DocumentParsed += HandleDocumentDocumentParsed;
-			Editor.MouseMoved += HandleBeginHover;
 			Editor.CaretPositionChanged += HandleCaretPositionChanged;
 			Editor.TextChanged += Editor_TextChanged;
 			Editor.BeginAtomicUndoOperation += Editor_BeginAtomicUndoOperation;
@@ -383,11 +380,6 @@ namespace MonoDevelop.CodeActions
 				return;
 			RemoveWidget ();
 			HandleCaretPositionChanged (null, EventArgs.Empty);
-		}
-
-		void HandleBeginHover (object sender, EventArgs e)
-		{
-			CancelSmartTagPopupTimeout ();
 		}
 
 		void HandleDocumentDocumentParsed (object sender, EventArgs e)

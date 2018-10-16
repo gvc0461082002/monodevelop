@@ -157,9 +157,9 @@ namespace MonoDevelop.SourceEditor.Wrappers
 			lastItem = null;
 		}
 
-		public override void DestroyTooltipWindow (Xwt.WindowFrame tipWindow)
+		public override bool DestroyTooltipWindow (Xwt.WindowFrame tipWindow)
 		{
-			provider.DestroyTooltipWindow (tipWindow);
+			return provider.DestroyTooltipWindow (tipWindow);
 		}
 		#endregion
 	}

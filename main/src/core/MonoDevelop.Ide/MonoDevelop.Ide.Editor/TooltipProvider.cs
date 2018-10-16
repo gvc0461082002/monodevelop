@@ -197,7 +197,7 @@ namespace MonoDevelop.Ide.Editor
 			return new Xwt.Point (x, y);
 		}
 
-		public virtual void DestroyTooltipWindow (Window tipWindow)
+		public virtual bool DestroyTooltipWindow (Window tipWindow)
 		{
 			if (tipWindow.nativeWidget is Gtk.Widget gtkWidget) {
 				gtkWidget.Destroy ();
@@ -205,6 +205,7 @@ namespace MonoDevelop.Ide.Editor
 				disposable.Dispose ();
 			} 
 			tipWindow.Dispose ();
+			return true;
 		}
 
 		protected bool IsDisposed {

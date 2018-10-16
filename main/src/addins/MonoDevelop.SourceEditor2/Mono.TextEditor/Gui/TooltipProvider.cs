@@ -97,9 +97,10 @@ namespace Mono.TextEditor
 			tipWindow.Show ();
 		}
 
-		public virtual void DestroyTooltipWindow (WindowFrame tipWindow)
+		public virtual bool DestroyTooltipWindow (WindowFrame tipWindow)
 		{
 			tipWindow.Dispose ();
+			return true;
 		}
 	}
 }

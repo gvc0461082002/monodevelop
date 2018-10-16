@@ -3336,9 +3336,11 @@ namespace Mono.TextEditor
 				//					if (x >= 0 && y >= 0 && x < w && y < h)
 				//						return;
 				//				}
-				currentTooltipProvider.DestroyTooltipWindow (tipWindow);
-				tipWindow = null;
-				tipItem = null;
+				var result = currentTooltipProvider.DestroyTooltipWindow (tipWindow);
+				if (result) {
+					tipWindow = null;
+					tipItem = null;
+				}
 			}
 		}
 		

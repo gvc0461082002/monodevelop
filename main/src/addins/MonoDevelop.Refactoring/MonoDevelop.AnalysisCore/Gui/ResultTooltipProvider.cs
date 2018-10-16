@@ -239,21 +239,18 @@ namespace MonoDevelop.AnalysisCore.Gui
 		}
 
 		static FloatingQuickFixIconWidget floatingWidget;
-		public override void DestroyTooltipWindow (Window tipWindow)
+		public override bool DestroyTooltipWindow (Window tipWindow)
 		{
 			var window = (LanguageItemWindow)tipWindow;
 			if (window.Tag is FloatingQuickFixIconWidget iconWidget) {
-				if (iconWidget.IsMouseOver ()) {
-					iconWidget.LeaveNotifyEvent += delegate {
-						iconWidget.QueueDestroy ();
-					};
-					return;
+				if (iconWidget.IsMouseNear ()) {
+					return false;
 				}
-
 				iconWidget.QueueDestroy ();
 			} else {
 				window.Destroy ();
 			}
+			return true;
 		}
 
 		#endregion
