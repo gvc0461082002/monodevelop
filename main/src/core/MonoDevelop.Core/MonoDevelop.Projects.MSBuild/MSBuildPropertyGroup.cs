@@ -27,10 +27,11 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Xml;
 
 using MonoDevelop.Core;
-using System.Collections.Immutable;
+using MonoDevelop.Utilities;
 
 namespace MonoDevelop.Projects.MSBuild
 {
@@ -38,6 +39,8 @@ namespace MonoDevelop.Projects.MSBuild
 	{
 		ImmutableDictionary<string, MSBuildProperty> properties = ImmutableDictionary<string, MSBuildProperty>.Empty.WithComparers (StringComparer.OrdinalIgnoreCase);
 		internal List<MSBuildProperty> PropertiesAttributeOrder { get; } = new List<MSBuildProperty> ();
+		readonly RaceChecker raceChecker = new LoggingRaceChecker ();
+
 		public MSBuildPropertyGroup ()
 		{
 		}
@@ -72,7 +75,9 @@ namespace MonoDevelop.Projects.MSBuild
 			prop.Owner = this;
 			prop.ReadUnknownAttribute (reader, lastAttr);
 			ChildNodes = ChildNodes.Add (prop);
-			properties = properties.SetItem (prop.Name, prop);// If a property is defined more than once, we only care about the last registered value
+			using (raceChecker.Lock ()) {
+				properties = properties.SetItem (prop.Name, prop);// If a property is defined more than once, we only care about the last registered value
+			}
 			PropertiesAttributeOrder.Add (prop);
 		}
 
@@ -87,7 +92,9 @@ namespace MonoDevelop.Projects.MSBuild
 			prop.Owner = this;
 			prop.Read (reader);
 			ChildNodes = ChildNodes.Add (prop);
-			properties = properties.SetItem (prop.Name, prop);// If a property is defined more than once, we only care about the last registered value
+			using (raceChecker.Lock ()) {
+				properties = properties.SetItem (prop.Name, prop);// If a property is defined more than once, we only care about the last registered value
+			}
 		}
 
 		internal override string GetElementName ()
@@ -116,7 +123,9 @@ namespace MonoDevelop.Projects.MSBuild
 					} else {
 						ChildNodes = ChildNodes.Add (cp);
 					}
-					properties = properties.SetItem (cp.Name, cp);
+					using (raceChecker.Lock ()) {
+						properties = properties.SetItem (cp.Name, cp);
+					}
 					cp.ParentNode = PropertiesParent;
 					cp.Owner = this;
 				} else
@@ -264,7 +273,9 @@ namespace MonoDevelop.Projects.MSBuild
 			prop.IsNew = true;
 			prop.ParentNode = PropertiesParent;
 			prop.Owner = this;
-			properties = properties.SetItem (name, prop);
+			using (raceChecker.Lock ()) {
+				properties = properties.SetItem (name, prop);
+			}
 
 			if (insertIndex != -1)
 				ChildNodes = ChildNodes.Insert (insertIndex, prop);
@@ -404,7 +415,9 @@ namespace MonoDevelop.Projects.MSBuild
 			if (PropertyGroupListener != null)
 				PropertyGroupListener.PropertyRemoved (prop);
 			prop.RemoveIndent ();
-			properties = properties.Remove (prop.Name);
+			using (raceChecker.Lock ()) {
+				properties = properties.Remove (prop.Name);
+			}
 			ChildNodes = ChildNodes.Remove (prop);
 			NotifyChanged ();
 		}
