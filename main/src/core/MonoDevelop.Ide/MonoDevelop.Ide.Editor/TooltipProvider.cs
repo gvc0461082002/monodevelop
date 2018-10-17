@@ -84,6 +84,13 @@ namespace MonoDevelop.Ide.Editor
 		}
 	}
 
+	public enum TooltipCloseReason
+	{
+		Force,
+		TextAreaLeft,
+		MouseMove
+	}
+
 	// TODO: Improve tooltip API - that really looks messy
 	public abstract class TooltipProvider : IDisposable
 	{
@@ -197,7 +204,7 @@ namespace MonoDevelop.Ide.Editor
 			return new Xwt.Point (x, y);
 		}
 
-		public virtual bool DestroyTooltipWindow (Window tipWindow)
+		public virtual bool TryCloseTooltipWindow (Window tipWindow, TooltipCloseReason reason)
 		{
 			if (tipWindow.nativeWidget is Gtk.Widget gtkWidget) {
 				gtkWidget.Destroy ();

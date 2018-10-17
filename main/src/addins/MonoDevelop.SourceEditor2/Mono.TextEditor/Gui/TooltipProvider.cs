@@ -97,7 +97,7 @@ namespace Mono.TextEditor
 			tipWindow.Show ();
 		}
 
-		public virtual bool DestroyTooltipWindow (WindowFrame tipWindow)
+		public virtual bool TryCloseTooltipWindow (WindowFrame tipWindow, MonoDevelop.Ide.Editor.TooltipCloseReason reason)
 		{
 			tipWindow.Dispose ();
 			return true;

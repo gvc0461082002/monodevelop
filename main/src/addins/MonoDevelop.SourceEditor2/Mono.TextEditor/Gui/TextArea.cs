@@ -212,7 +212,7 @@ namespace Mono.TextEditor
 		
 		protected virtual void HAdjustmentValueChanged ()
 		{
-			HideTooltip (false);
+			HideTooltip ();
 			double value = this.textEditorData.HAdjustment.Value;
 			if (value != System.Math.Round (value)) {
 				value = System.Math.Round (value);
@@ -234,7 +234,7 @@ namespace Mono.TextEditor
 		
 		protected virtual void VAdjustmentValueChanged ()
 		{
-			HideTooltip (false);
+			HideTooltip ();
 			textViewMargin.HideCodeSegmentPreviewWindow ();
 			double value = this.textEditorData.VAdjustment.Value;
 			if (value != System.Math.Round (value)) {
@@ -859,7 +859,7 @@ namespace Mono.TextEditor
 
 				if (tipWindow != null && currentTooltipProvider != null) {
 					if (!currentTooltipProvider.IsInteractive (textEditorData.Parent, tipWindow))
-						DelayedHideTooltip ();
+						DelayedHideTooltip (TooltipCloseReason.TextAreaLeft);
 				} else {
 					HideTooltip ();
 				}
@@ -1804,7 +1804,7 @@ namespace Mono.TextEditor
 			IsMouseTrapped = false;
 			if (tipWindow != null && currentTooltipProvider != null) {
 				if (!currentTooltipProvider.IsInteractive (textEditorData.Parent, tipWindow)) {
-					DelayedHideTooltip ();
+					DelayedHideTooltip (TooltipCloseReason.TextAreaLeft);
 				} else {
 					currentTooltipProvider.TakeMouseControl (textEditorData.Parent, tipWindow);
 				}
@@ -3183,12 +3183,12 @@ namespace Mono.TextEditor
 		void ShowTooltip (Gdk.ModifierType modifierState, DocumentLocation location)
 		{
 			if (mx < TextViewMargin.TextStartPosition) {
-				HideTooltip ();
+				HideTooltip (TooltipCloseReason.MouseMove);
 				return;
 			}
 
 			if (location.IsEmpty) {
-				HideTooltip ();
+				HideTooltip (TooltipCloseReason.MouseMove);
 				return;
 			}
 
@@ -3234,7 +3234,7 @@ namespace Mono.TextEditor
 					return;
 			}
 			if (tipItem != null && !tipItem.IsInvalid () && !tipItem.Contains (offset)) 
-				HideTooltip ();
+				HideTooltip (TooltipCloseReason.MouseMove);
 			nextTipX = xloc;
 			nextTipY = yloc;
 			nextTipOffset = offset;
@@ -3321,7 +3321,7 @@ namespace Mono.TextEditor
 			tipWindow = tooltipWindow;
 		}
 		
-		public void HideTooltip (bool checkMouseOver = true)
+		public void HideTooltip (TooltipCloseReason reason = TooltipCloseReason.Force)
 		{
 			CancelScheduledHide ();
 			CancelScheduledShow ();
@@ -3336,19 +3336,19 @@ namespace Mono.TextEditor
 				//					if (x >= 0 && y >= 0 && x < w && y < h)
 				//						return;
 				//				}
-				var result = currentTooltipProvider.DestroyTooltipWindow (tipWindow);
-				if (result) {
+
+				if (currentTooltipProvider.TryCloseTooltipWindow (tipWindow, reason)) {
 					tipWindow = null;
 					tipItem = null;
 				}
 			}
 		}
 		
-		void DelayedHideTooltip ()
+		void DelayedHideTooltip (TooltipCloseReason reason)
 		{
 			CancelScheduledHide ();
 			tipHideTimeoutId = GLib.Timeout.Add (300, delegate {
-				HideTooltip ();
+				HideTooltip (reason);
 				tipHideTimeoutId = 0;
 				return false;
 			});

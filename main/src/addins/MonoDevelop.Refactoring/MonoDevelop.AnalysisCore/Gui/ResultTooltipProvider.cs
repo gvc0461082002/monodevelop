@@ -239,13 +239,14 @@ namespace MonoDevelop.AnalysisCore.Gui
 		}
 
 		static FloatingQuickFixIconWidget floatingWidget;
-		public override bool DestroyTooltipWindow (Window tipWindow)
+		public override bool TryCloseTooltipWindow (Window tipWindow, TooltipCloseReason reason)
 		{
 			var window = (LanguageItemWindow)tipWindow;
 			if (window.Tag is FloatingQuickFixIconWidget iconWidget) {
-				if (iconWidget.IsMouseNear ()) {
+				if (reason != TooltipCloseReason.Force && iconWidget.IsMouseNear ()) {
 					return false;
 				}
+
 				iconWidget.QueueDestroy ();
 			} else {
 				window.Destroy ();

@@ -157,9 +157,9 @@ namespace MonoDevelop.SourceEditor.Wrappers
 			lastItem = null;
 		}
 
-		public override bool DestroyTooltipWindow (Xwt.WindowFrame tipWindow)
+		public override bool TryCloseTooltipWindow (Xwt.WindowFrame tipWindow, Ide.Editor.TooltipCloseReason reason)
 		{
-			return provider.DestroyTooltipWindow (tipWindow);
+			return provider.TryCloseTooltipWindow (tipWindow, reason);
 		}
 		#endregion
 	}
