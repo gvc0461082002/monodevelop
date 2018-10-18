@@ -141,7 +141,6 @@ namespace MonoDevelop.AnalysisCore.Gui
 			}
 			if (tag == null)
 				return null;
-			Console.WriteLine (floatingWidgetShown);
 			var tooltipInfo = new TaggedTooltipInformation<CodeActions.CodeActionContainer> {
 				SignatureMarkup = StringBuilderCache.ReturnAndFree (sb),
 				Tag = tag
