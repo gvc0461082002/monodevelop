@@ -182,61 +182,40 @@ namespace MonoDevelop.CodeActions
 				var fixes = await GetCurrentFixesAsync (token);
 				if (token.IsCancellationRequested)
 					return;
-
-				var menu = CodeFixMenuService.CreateFixMenu (Editor, fixes, token);
-				if (token.IsCancellationRequested)
-					return;
-
-				if (menu.Items.Count == 0) {
-					return;
-				}
-
-				Editor.SuppressTooltips = true;
-				if (menuAction != null)
-					menuAction (menu);
-
-				var p = point ?? Editor.LocationToPoint (Editor.CaretLocation);
-				Widget widget = Editor;
-				var rect = new Gdk.Rectangle (
-					(int)p.X + widget.Allocation.X,
-					(int)p.Y + widget.Allocation.Y, 0, 0);
-
-				ShowFixesMenu (widget, rect, menu);
+				PopupQuickFixMenu (evt, fixes, menuAction, point);
 			}
 		}
 
-		internal void PopupQuickFixMenu (Gdk.EventButton evt, CodeActionContainer fixes,  Action<CodeFixMenu> menuAction, Xwt.Point? point = null)
+		internal void PopupQuickFixMenu (Gdk.EventButton evt, CodeActionContainer fixes, Action<CodeFixMenu> menuAction, Xwt.Point? point = null)
 		{
-			using (Refactoring.Counters.FixesMenu.BeginTiming ("Show quick fixes menu")) {
-				var token = quickFixCancellationTokenSource.Token;
+			var token = quickFixCancellationTokenSource.Token;
 
-				if (token.IsCancellationRequested)
-					return;
+			if (token.IsCancellationRequested)
+				return;
 
-				var menu = CodeFixMenuService.CreateFixMenu (Editor, fixes, token);
-				if (token.IsCancellationRequested)
-					return;
+			var menu = CodeFixMenuService.CreateFixMenu (Editor, fixes, token);
+			if (token.IsCancellationRequested)
+				return;
 
-				if (menu.Items.Count == 0) {
-					return;
-				}
-
-				Editor.SuppressTooltips = true;
-				if (menuAction != null)
-					menuAction (menu);
-				Gdk.Rectangle rect;
-				Widget widget = Editor;
-
-				if (!point.HasValue) {
-					var p = Editor.LocationToPoint (Editor.CaretLocation);
-					rect = new Gdk.Rectangle (
-						(int)p.X + widget.Allocation.X,
-						(int)p.Y + widget.Allocation.Y, 0, 0);
-				} else {
-					rect = new Gdk.Rectangle ((int)point.Value.X, (int)point.Value.Y, 0, 0);
-				}
-				ShowFixesMenu (widget, rect, menu);
+			if (menu.Items.Count == 0) {
+				return;
 			}
+
+			Editor.SuppressTooltips = true;
+			if (menuAction != null)
+				menuAction (menu);
+			Gdk.Rectangle rect;
+			Widget widget = Editor;
+
+			if (!point.HasValue) {
+				var p = Editor.LocationToPoint (Editor.CaretLocation);
+				rect = new Gdk.Rectangle (
+					(int)p.X + widget.Allocation.X,
+					(int)p.Y + widget.Allocation.Y, 0, 0);
+			} else {
+				rect = new Gdk.Rectangle ((int)point.Value.X, (int)point.Value.Y, 0, 0);
+			}
+			ShowFixesMenu (widget, rect, menu);
 		}
 
 		bool ShowFixesMenu (Widget parent, Gdk.Rectangle evt, CodeFixMenu entrySet)

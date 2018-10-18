@@ -151,6 +151,8 @@ namespace MonoDevelop.AnalysisCore.Gui
 		public override Window CreateTooltipWindow (TextEditor editor, DocumentContext ctx, TooltipItem item, int offset, Xwt.ModifierKeys modifierState)
 		{
 			var result = item.Item as TooltipInformation;
+			if (result == null)
+				return null;
 			var window = new LanguageItemWindow (CompileErrorTooltipProvider.GetExtensibleTextEditor (editor), modifierState, null, result.SignatureMarkup, null);
 			window.Destroyed += delegate {
 				if (window.Tag is FloatingQuickFixIconWidget widget) {
@@ -181,7 +183,7 @@ namespace MonoDevelop.AnalysisCore.Gui
 			w += 10;
 			var allocation = GetAllocation (editor);
 
-			var info = item.Item as TaggedTooltipInformation<CodeActions.CodeActionContainer>;
+			var info = (TaggedTooltipInformation<CodeActions.CodeActionContainer>)item.Item;
 			var loc = editor.OffsetToLocation (info.Tag.Span.Start);
 			var p = editor.LocationToPoint (loc);
 			var view = editor.GetContent<SourceEditorView> ();
@@ -212,7 +214,7 @@ namespace MonoDevelop.AnalysisCore.Gui
 		public override void ShowTooltipWindow (TextEditor editor, Components.Window tipWindow, TooltipItem item, Xwt.ModifierKeys modifierState, int mouseX, int mouseY)
 		{
 			base.ShowTooltipWindow (editor, tipWindow, item, modifierState, mouseX, mouseY);
-			var info = item.Item as TaggedTooltipInformation<CodeActions.CodeActionContainer>;
+			var info = (TaggedTooltipInformation<CodeActions.CodeActionContainer>)item.Item;
 			var sourceEditorView = editor.GetContent<SourceEditorView> ();
 			var codeActionEditorExtension = editor.GetContent<CodeActionEditorExtension> ();
 			var loc = editor.OffsetToLocation (info.Tag.Span.Start);
