@@ -44,7 +44,7 @@ namespace MonoDevelop.AnalysisCore.Gui
 			readonly SourceEditorView sourceEditorView;
 			readonly CodeActionContainer fixes;
 			readonly Cairo.Point point;
-			private uint destroyTimeout;
+			uint destroyTimeout;
 
 			public FloatingQuickFixIconWidget (CodeActionEditorExtension codeActionEditorExtension, LanguageItemWindow window, SourceEditorView sourceEditorView, SourceEditor.SmartTagSeverity severity, CodeActionContainer fixes, Cairo.Point point) : base (Gtk.WindowType.Popup)
 			{
