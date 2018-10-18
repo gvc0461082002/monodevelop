@@ -40,7 +40,7 @@ namespace MonoDevelop.AnalysisCore.Gui
 		partial class FloatingQuickFixIconWidget : Gtk.Window
 		{
 			readonly CodeActionEditorExtension ext;
-			private readonly LanguageItemWindow window;
+			readonly LanguageItemWindow window;
 			readonly SourceEditorView sourceEditorView;
 			readonly CodeActionContainer fixes;
 			readonly Cairo.Point point;
